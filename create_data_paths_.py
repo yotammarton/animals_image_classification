@@ -45,7 +45,7 @@ def voc_cats_dogs_images():
     for dog in voc_dogs_images_names:
         df = df.append({'path': dog, 'cat/dog': 'dog', 'breed': None, 'dataset': 'voc'}, ignore_index=True)
 
-    return df
+    return df[['path', 'cat/dog', 'breed', 'dataset']]
 
 
 def oxford_cats_dogs_images():
@@ -69,6 +69,15 @@ def oxford_cats_dogs_images():
             df = df.append({'path': file_path, 'cat/dog': 'cat' if cat_or_dog == '1' else 'dog',
                             'breed': breed, 'dataset': 'oxford'}, ignore_index=True)
 
+    return df[['path', 'cat/dog', 'breed', 'dataset']]
+
+
+def train_test_split_basic_model(df, test_size=1000):
+    cats = df[df['cat/dog'] == 'cat'].sample(frac=1, random_state=42)  # shuffle
+    dogs = df[df['cat/dog'] == 'dog'].sample(frac=1, random_state=42)  # shuffle
+    cats['train/test'] = ['test'] * test_size + ['train'] * (len(cats) - test_size)
+    dogs['train/test'] = ['test'] * test_size + ['train'] * (len(dogs) - test_size)
+    df = pd.concat([cats, dogs]).reset_index(drop=True)
     return df
 
 
@@ -76,3 +85,5 @@ if __name__ == "__main__":
     df_voc = voc_cats_dogs_images()
     df_oxford = oxford_cats_dogs_images()
     df = pd.concat([df_voc, df_oxford])
+    df = train_test_split_basic_model(df)
+    df.to_csv('data_basic_model.csv')
