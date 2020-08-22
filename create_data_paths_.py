@@ -78,6 +78,7 @@ def train_test_split_basic_model(df, test_size=1000):
     cats['train/test'] = ['test'] * test_size + ['train'] * (len(cats) - test_size)
     dogs['train/test'] = ['test'] * test_size + ['train'] * (len(dogs) - test_size)
     df = pd.concat([cats, dogs]).reset_index(drop=True)
+    print(df.shape)
     return df
 
 

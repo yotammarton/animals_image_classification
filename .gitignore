@@ -2,3 +2,10 @@
 annotations
 images
 VOCdevkit
+mini_images
+mini_test
+images
+annotations
+VOCdevkit
+paths.csv
+Notebook.ipynb
