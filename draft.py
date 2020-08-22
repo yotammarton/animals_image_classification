@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 # python test.py --dataset "set_name" --neighbors "# of neighors"
 
 
-def image_to_feature_vector(image, size=(200, 200)):
+def image_to_feature_vector(image, size=(100, 100)):
     # resize the image to a fixed size, then flatten the image into
     # a list of raw pixel intensities
     return cv2.resize(image, size).flatten()
@@ -59,32 +59,56 @@ entries = os.listdir(directory_name)
 for (i, item) in enumerate(entries):
     if '6' in item:
         path = directory_name + item
-        image6 = cv2.imread(path)  # TODO I think the problem is that it can't read bit depth=8 (and not 24)
+        image6 = cv2.imread(path)
+        print(f'image6.shape:{image6.shape}')
         window_name = '6'
 
         gray = cv2.cvtColor(image6, cv2.COLOR_BGR2GRAY)
-        sift = cv2.xfeatures2d.SIFT_create()
+        print(f'gray6.shape:{gray.shape}')
+
+        sift = cv2.xfeatures2d.SIFT_create(nfeatures=70)
         key_points6, descriptors6 = sift.detectAndCompute(gray, None)  # None is for no-mask
+        print(f'key_points6:{key_points6}')
+        print(f'key_points6[0]:{key_points6[0]}')
+        print(f'key_points6.shape:{len(key_points6)}')
+        print(f'descriptors6:{descriptors6}')
+        print(f'descriptors6.shape:{descriptors6.shape}')
+        print(f'descriptors6.shape:{len(descriptors6.flatten())}')
 
         sift_image = cv2.drawKeypoints(gray, key_points6, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         cv2.waitKey(0)
         cv2.imshow(window_name, sift_image)
 
-    if '7' in item:
+        image6 = cv2.imread(path)
+        cv2.waitKey(0)
+        cv2.imshow('g', sift_image)
+
+    elif '7' in item:
         path = directory_name + item
-        image7 = cv2.imread(path)  # TODO I think the problem is that it can't read bit depth=8 (and not 24)
+        image7 = cv2.imread(path)
+        print(f'image7.shape:{image7.shape}')
         window_name = '7'
 
         gray = cv2.cvtColor(image7, cv2.COLOR_BGR2GRAY)
-        sift = cv2.xfeatures2d.SIFT_create()
-        key_points7, descriptors7 = sift.detectAndCompute(gray, None)  # None is for no-mask
+        print(f'gray7.shape:{gray.shape}')
 
+        sift = cv2.xfeatures2d.SIFT_create(nfeatures=70)
+        key_points7, descriptors7 = sift.detectAndCompute(gray, None)  # None is for no-mask
+        print(f'key_points7:{key_points7}')
+        print(f'key_points7.shape:{len(key_points7)}')
+        print(f'descriptors7:{descriptors7}')
+        print(f'descriptors7.shape:{descriptors7.shape}')
+        print(f'descriptors7.shape:{len(descriptors7.flatten())}')
         sift_image = cv2.drawKeypoints(gray, key_points7, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         cv2.waitKey(0)
         cv2.imshow(window_name, sift_image)
 
-keypoints_, descriptors_ = cv2.Feature2D.compute(image6, key_points6, descriptors6)
-print(keypoints_)
+        image6 = cv2.imread(path)
+        cv2.waitKey(0)
+        cv2.imshow('g', sift_image)
+
+# keypoints_, descriptors_ = cv2.Feature2D.compute(image7, key_points7, descriptors7)
+# print(keypoints_)
 
 # create BFMatcher object
 bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=False)
