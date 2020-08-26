@@ -7,5 +7,3 @@ mini_test
 images
 annotations
 VOCdevkit
-paths.csv
-Notebook.ipynb

@@ -170,7 +170,6 @@ def main():
     print("Evaluating SIFT accuracy...")
     Classify(sift_features, set_type, labels)
 
-
     print("Evaluating raw pixels & color histogram accuracy...")
     raw_and_hist = np.concatenate((rawImages, color_hist), axis=1)
     Classify(raw_and_hist, set_type, labels)
