@@ -11,24 +11,32 @@ import pandas as pd
 
 def get_classification_from_segmentation(segmentation_):
     """
-    0 = background || 8 = cat || 12 = dog
+    retrieve the classification from the segmentation
+    :param segmentation_: a segmentation of the image (pixel values: 0 = background || 8 = cat || 12 = dog)
+    :return: 'cat' / 'dog' prediction for the given segmentation
     """
     pixels = list(segmentation_.getdata())
-    # change all non-background / non-cat / non-dog >> background
-    pixels = [p if p in [0, 8, 12] else 0 for p in pixels]
+    # change all non-background / non-cat / non-dog >> background TODO del
+    # pixels = [p if p in [0, 8, 12] else 0 for p in pixels] TODO del
     # create a Counter based on the pixels colors
     counter = collections.Counter(pixels)
 
+    # amount of pixels per category
     cat = counter[8] if 8 in counter else 0
     dog = counter[12] if 12 in counter else 0
 
+    # at the case when there is a tie (unlikely) in the number of dog pixels and cat pixels
     if cat == dog:
         if random.random() < 0.5:
             return 'dog'
         else:
             return 'cat'
+
+    # more cat pixels
     elif cat > dog:
         return 'cat'
+
+    # more dog pixels
     else:
         return 'dog'
 
@@ -43,7 +51,8 @@ if __name__ == '__main__':
 
     # get the test data
     df = pd.read_csv('data_basic_model_ubuntu.csv')[['path', 'cat/dog', 'breed', 'dataset', 'train/test']]
-    test_data = df[df['train/test'] == 'test']
+    # test_data = df[(df['train/test'] == 'test') & (df['dataset'] == 'oxford')]  # TODO oxford only
+    test_data = df[df['dataset'] == 'oxford']
 
     predictions = list()
     for index, test_image in test_data.iterrows():
@@ -57,6 +66,16 @@ if __name__ == '__main__':
     # true \ predicted |  cat   |  dog  |
     #       cat        |   -    |   -   |
     #       dog        |   -    |   -   |
-
+    # Results:
+    # all data (voc + oxford)
+    # [[980  20]
+    #  [10 990]]
+    # accuracy = 98.5%
+    # -----------------------
+    # only oxford
+    # [[2316   55]
+    #  [48 4930]]
+    # accuracy = 98.59844876853994%
+    
     cm = confusion_matrix(list(test_data['cat/dog']), predictions, labels=["cat", "dog"])
     print(cm)
