@@ -50,7 +50,7 @@ if __name__ == '__main__':
     model.load_weights(saved_model_path)
 
     # get the test data
-    df = pd.read_csv('data_basic_model_ubuntu.csv')[['path', 'cat/dog', 'breed', 'dataset', 'train/test']]
+    df = pd.read_csv('data_basic_model_linux.csv')[['path', 'cat/dog', 'breed', 'dataset', 'train/test']]
     # test_data = df[(df['train/test'] == 'test') & (df['dataset'] == 'oxford')]  # TODO oxford only
     test_data = df[df['dataset'] == 'oxford']
 
