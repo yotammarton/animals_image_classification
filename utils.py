@@ -131,14 +131,32 @@ def oxford_cats_dogs_images():
     return df[['path', 'cat/dog', 'breed', 'dataset']]
 
 
-def train_test_split_basic_model(df, test_size=1000):
-    cats = df[df['cat/dog'] == 'cat'].sample(frac=1, random_state=42)  # shuffle
-    dogs = df[df['cat/dog'] == 'dog'].sample(frac=1, random_state=42)  # shuffle
-    cats['train/test'] = ['test'] * test_size + ['train'] * (len(cats) - test_size)
-    dogs['train/test'] = ['test'] * test_size + ['train'] * (len(dogs) - test_size)
-    df = pd.concat([cats, dogs]).reset_index(drop=True)
-    print(df.shape)
-    return df
+def train_test_split_basic_model(df, advanced_model=False):
+    if advanced_model:
+        # get 70% of breed images for train and the rest for test
+        # roughly 200 images per breed
+        result_df = None
+        for breed in set(df['breed']):
+            # get the df for specific breed and shuffle it
+            breed_df = df[df['breed'] == breed].sample(frac=1)
+            test_size = int(len(breed_df) * 0.3)
+            train_size = len(breed_df) - test_size
+            breed_df['train/test'] = ['test'] * test_size + ['train'] * train_size
+            if result_df is None:
+                result_df = breed_df.copy()
+            else:
+                result_df = result_df.append(breed_df)
+        return result_df.reset_index(drop=True)
+
+    else:
+        test_size = 1000
+        cats = df[df['cat/dog'] == 'cat'].sample(frac=1, random_state=42)  # shuffle
+        dogs = df[df['cat/dog'] == 'dog'].sample(frac=1, random_state=42)  # shuffle
+        cats['train/test'] = ['test'] * test_size + ['train'] * (len(cats) - test_size)
+        dogs['train/test'] = ['test'] * test_size + ['train'] * (len(dogs) - test_size)
+        df = pd.concat([cats, dogs]).reset_index(drop=True)
+        print(df.shape)
+        return df
 
 
 if __name__ == '__main__':
@@ -153,10 +171,16 @@ if __name__ == '__main__':
     #     imshow(augment_add_noise(imread(path)))
     #     plt.show()
 
-    """build the .csv for image paths"""
+    """build the .csv for image paths for basic"""
     # df_voc = voc_cats_dogs_images()
     # df_oxford = oxford_cats_dogs_images()
     # df = pd.concat([df_voc, df_oxford])
     # df = train_test_split_basic_model(df)
     # df.to_csv('data_basic_model.csv')
+
+    """build the .csv for image paths for advanced"""
+    # df_oxford = oxford_cats_dogs_images()
+    # df_oxford = train_test_split_basic_model(df_oxford, advanced_model=True)
+    # df_oxford.to_csv('data_advanced_model.csv')
+
     pass
