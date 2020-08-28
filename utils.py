@@ -181,6 +181,6 @@ if __name__ == '__main__':
     """build the .csv for image paths for advanced"""
     # df_oxford = oxford_cats_dogs_images()
     # df_oxford = train_test_split_basic_model(df_oxford, advanced_model=True)
-    # df_oxford.to_csv('data_advanced_model.csv')
+    # df_oxford.to_csv('data_advanced_model_linux.csv')
 
     pass
