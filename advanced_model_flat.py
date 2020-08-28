@@ -65,6 +65,7 @@ for i in range(len(test_set)):
   img_class = model.predict_classes(test_img)
   # img_class = model.call(test_img)
   img_class = model.precict(test_img)
+
   prediction = img_class[0]
   Y_pred.append(prediction)
 
