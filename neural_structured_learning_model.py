@@ -31,7 +31,7 @@ df['breed'] = df['breed'].astype(str)
 train_df = df[df['train/test'] == 'train'].copy()
 test_df = df[df['train/test'] == 'test'].copy()
 
-train_df = train_df[['path', 'cat/dog', 'breed']]
+train_df = train_df[['path', 'cat/dog', 'breed']].sample(65)
 # test = test[['path', 'cat/dog', 'breed']]
 test_df = test_df[['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
@@ -50,17 +50,18 @@ test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="pat
 """PREPARE TENSORFLOW DATASETS FOR TRAIN, TEST"""
 train_dataset = tf.data.Dataset.from_generator(
     lambda: train_generator,
-    output_types=(tf.float32, tf.float32),
-    output_shapes=([TRAIN_BATCH_SIZE] + INPUT_SHAPE, (TRAIN_BATCH_SIZE, num_of_classes)))
+    output_types=(tf.float32, tf.float32))
+# output_shapes=([TRAIN_BATCH_SIZE] + INPUT_SHAPE, (TRAIN_BATCH_SIZE, num_of_classes)))
 
 # convert the dataset to the desired format
-train_dataset = train_dataset.map(convert_to_dictionaries)
+train_dataset = train_dataset.map(convert_to_dictionaries).batch(TRAIN_BATCH_SIZE, drop_remainder=True)
 
 # same for test data
 test_dataset = tf.data.Dataset.from_generator(
     lambda: test_generator,
-    output_types=(tf.float32, tf.float32),
-    output_shapes=([1] + INPUT_SHAPE, (1, num_of_classes)))
+    output_types=(tf.float32, tf.float32))
+# output_shapes=([1] + INPUT_SHAPE, (1, num_of_classes)))
+
 test_dataset = test_dataset.map(convert_to_dictionaries)
 test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle = False
 
@@ -77,7 +78,6 @@ adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', met
 print('============ fit adversarial model ============')
 # every epoch we go through all the train data images
 adversarial_model.fit(train_dataset, epochs=15)
-# TODO try without steps_per_epoch
 # TODO change, take best, add validation? batch_size parm?? steps parm??
 
 print('================== inference ==================')
