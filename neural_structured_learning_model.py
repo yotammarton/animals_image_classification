@@ -54,7 +54,7 @@ train_dataset = tf.data.Dataset.from_generator(
 # output_shapes=([TRAIN_BATCH_SIZE] + INPUT_SHAPE, (TRAIN_BATCH_SIZE, num_of_classes)))
 
 # convert the dataset to the desired format
-train_dataset = train_dataset.map(convert_to_dictionaries).batch(TRAIN_BATCH_SIZE, drop_remainder=True)
+train_dataset = train_dataset.map(convert_to_dictionaries)
 
 # same for test data
 test_dataset = tf.data.Dataset.from_generator(
