@@ -4,6 +4,7 @@ images
 VOCdevkit
 mini_images
 mini_test
+vm.txt
 images
 annotations
 VOCdevkit

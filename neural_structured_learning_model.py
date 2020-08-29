@@ -76,9 +76,8 @@ adversarial_model = nsl.keras.AdversarialRegularization(model, label_keys=[LABEL
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit adversarial model ============')
 # every epoch we go through all the train data images
-adversarial_model.fit(train_dataset,
-                      epochs=15,
-                      steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+adversarial_model.fit(train_dataset, epochs=15)
+# TODO try without steps_per_epoch
 # TODO change, take best, add validation? batch_size parm?? steps parm??
 
 print('================== inference ==================')
