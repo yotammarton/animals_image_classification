@@ -1,7 +1,7 @@
 """
 29/8/2020
 This module uses adversarial regularization from NSL (neural structured learning)
-to predict the breed (flat) of the animal
+to predict the breed (flat) of the animal (a multi-class classification problem from 37 different classes)
 """
 import tensorflow as tf
 import neural_structured_learning as nsl
@@ -28,8 +28,8 @@ df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
 # df = pd.read_csv("data_advanced_model.csv")
-train_df = df[df['train/test'] == 'train'].copy()
-test_df = df[df['train/test'] == 'test'].copy()
+train_df = df[df['train/test'] == 'train']
+test_df = df[df['train/test'] == 'test']
 
 train_df = train_df[['path', 'cat/dog', 'breed']]
 # test = test[['path', 'cat/dog', 'breed']]
@@ -45,25 +45,23 @@ train_generator = train_data_gen.flow_from_dataframe(dataframe=train_df, x_col="
 test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
                                                    class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                                   batch_size=1, shuffle=False)  # shuffle False for test, batch_size=1
+                                                   batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
 
 """PREPARE TENSORFLOW DATASETS FOR TRAIN, TEST"""
 train_dataset = tf.data.Dataset.from_generator(
     lambda: train_generator,
     output_types=(tf.float32, tf.float32))
-# output_shapes=([TRAIN_BATCH_SIZE] + INPUT_SHAPE, (TRAIN_BATCH_SIZE, num_of_classes)))
-
-# convert the dataset to the desired format
+# convert the dataset to the desired format of NSL (dictionaries)
 train_dataset = train_dataset.map(convert_to_dictionaries)
 
 # same for test data
 test_dataset = tf.data.Dataset.from_generator(
     lambda: test_generator,
     output_types=(tf.float32, tf.float32))
-# output_shapes=([1] + INPUT_SHAPE, (1, num_of_classes)))
-
 test_dataset = test_dataset.map(convert_to_dictionaries)
-test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle = False
+# for test data we dont want to generate infinite data, we just want the amount of data in the test (that's why take())
+test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle=False
+
 
 """DEFINE BASE MODEL"""
 model = ResNet50(weights=None, classes=num_of_classes, input_shape=INPUT_SHAPE)
@@ -78,7 +76,7 @@ adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', met
 print('============ fit adversarial model ============')
 # every epoch we go through all the train data images
 adversarial_model.fit(train_dataset, epochs=15, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-# TODO change, take best, add validation? batch_size parm?? steps parm??
+# TODO change, take best, add validation?
 
 print('================== inference ==================')
 # predictions = adversarial_model.predict(test_dataset)  # TODO
