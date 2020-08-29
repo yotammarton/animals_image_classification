@@ -23,30 +23,44 @@ df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
 # df = pd.read_csv("data_advanced_model.csv")
-training_set = df[df['train/test'] == 'train']
-full_testing_set = df[df['train/test'] == 'test']
+train = df[df['train/test'] == 'train']
+test = df[df['train/test'] == 'test']
 
-training_set = training_set[['path', 'cat/dog', 'breed']]
-full_testing_set = full_testing_set[['path', 'cat/dog', 'breed']]
-num_of_classes = len(set(training_set['breed']))
+train = train[['path', 'cat/dog', 'breed']]
+test = test[['path', 'cat/dog', 'breed']]
+num_of_classes = len(set(train['breed']))
 
 
-def generator():
-    """This function is used in order to create the tensorflow.data.Dataset object that will read data from dataframe"""
-    train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
-
-    return train_data_gen.flow_from_dataframe(dataframe=training_set, x_col="path", y_col="breed",
-                                              class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                              batch_size=BATCH_SIZE)
+# def generator(train_or_test, df, x_col, y_col, class_mode="categorical"):
+def generator(train_or_test):
+    """This function is used in order to create the tensorflow.data.Dataset object
+    that will read data from dataframe"""
+    if train_or_test == 'train':
+        train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+        return train_data_gen.flow_from_dataframe(dataframe=train, x_col="path", y_col="breed",
+                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
+                                                  batch_size=BATCH_SIZE)
+    else:  # test
+        test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+        return test_data_gen.flow_from_dataframe(dataframe=test, x_col="path", y_col="breed",
+                                                 class_mode="categorical", target_size=INPUT_SHAPE[:2],
+                                                 batch_size=BATCH_SIZE)
 
 
 train_dataset = tf.data.Dataset.from_generator(
-    generator,
+    generator, args=["train"],
     output_types=(tf.float32, tf.float32),
     output_shapes=([BATCH_SIZE] + INPUT_SHAPE, (BATCH_SIZE, num_of_classes)))
 
 # convert the dataset to the desired format
 train_dataset = train_dataset.map(convert_to_dictionaries)
+
+# same for test data
+test_dataset = tf.data.Dataset.from_generator(
+    generator, args=["test"],
+    output_types=(tf.float32, tf.float32),
+    output_shapes=([BATCH_SIZE] + INPUT_SHAPE, (BATCH_SIZE, num_of_classes)))
+test_dataset = test_dataset.map(convert_to_dictionaries)
 
 model = ResNet50(weights=None, classes=num_of_classes, input_shape=INPUT_SHAPE)
 
@@ -55,9 +69,10 @@ adversarial_config = nsl.configs.make_adv_reg_config(multiplier=0.2, adv_step_si
 adversarial_model = nsl.keras.AdversarialRegularization(model, adv_config=adversarial_config)
 
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
-adversarial_model.fit(train_dataset, epochs=1, steps_per_epoch=50)
+adversarial_model.fit(train_dataset, epochs=7, steps_per_epoch=50)
 
-# adv_model.evaluate() # TODO
+results = adversarial_model.evaluate(test_dataset)  # TODO
+print(results)
 
 """GRAPH SIMILARITY REPRESENTATION - GET THE LAST LAYER'S OUTPUT BEFORE PREDICTIONS"""
 # from keras import backend as K
