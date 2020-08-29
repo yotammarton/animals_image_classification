@@ -31,7 +31,7 @@ df['breed'] = df['breed'].astype(str)
 train_df = df[df['train/test'] == 'train'].copy()
 test_df = df[df['train/test'] == 'test'].copy()
 
-train_df = train_df[['path', 'cat/dog', 'breed']].sample(65)
+train_df = train_df[['path', 'cat/dog', 'breed']]
 # test = test[['path', 'cat/dog', 'breed']]
 test_df = test_df[['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
