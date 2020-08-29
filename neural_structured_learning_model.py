@@ -28,7 +28,7 @@ df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
 # df = pd.read_csv("data_advanced_model.csv")
-train_df = df[df['train/test'] == 'train'].copy()
+train_df = df[df['train/test'] == 'train'].copy().sample(100)  # TODO
 test_df = df[df['train/test'] == 'test'].copy()
 
 train_df = train_df[['path', 'cat/dog', 'breed']]
