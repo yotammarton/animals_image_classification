@@ -77,3 +77,4 @@ breed_pred = [inverted_classes[i] for i in model_pred]
 full_testing_set['predictions'] = breed_pred
 accuracy = len(full_testing_set[full_testing_set['breed'] == full_testing_set['predictions']])/len(full_testing_set)
 print(f'accuracy: {accuracy}')
+df.to_csv('advanced_flat_model_output_test_df.zip')
