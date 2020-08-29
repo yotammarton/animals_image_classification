@@ -28,7 +28,7 @@ df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
 # df = pd.read_csv("data_advanced_model.csv")
-train_df = df[df['train/test'] == 'train'].copy().sample(100)  # TODO
+train_df = df[df['train/test'] == 'train'].copy()
 test_df = df[df['train/test'] == 'test'].copy()
 
 train_df = train_df[['path', 'cat/dog', 'breed']]
@@ -77,7 +77,7 @@ adversarial_model = nsl.keras.AdversarialRegularization(model, label_keys=[LABEL
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit adversarial model ============')
 # every epoch we go through all the train data images
-adversarial_model.fit(train_dataset, epochs=15)
+adversarial_model.fit(train_dataset, epochs=15, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 # TODO change, take best, add validation? batch_size parm?? steps parm??
 
 print('================== inference ==================')
