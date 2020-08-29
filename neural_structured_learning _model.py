@@ -1,84 +1,85 @@
+"""
+29/8/2020
+This module uses adversarial regularization from NSL (neural structured learning)
+to predict the breed (flat) of the animal
+"""
 import tensorflow as tf
 import neural_structured_learning as nsl
 from tensorflow.keras.applications.resnet50 import ResNet50
-import tensorflow_datasets as tfds
 import pandas as pd
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 IMAGE_INPUT_NAME = 'input_1'  # if experiencing problems with this change to value of 'model.layers[0].name'
 LABEL_INPUT_NAME = 'label'
-BATCH_SIZE = 1
-INPUT_SHAPE = [128, 128, 3]  # images will be resized to this shape, this is also the dims for layers
+TRAIN_BATCH_SIZE = 32
+INPUT_SHAPE = [224, 224, 3]  # images will be resized to this shape, this is also the dims for layers
 
 
 # TODO choose different shape?
-
 
 def convert_to_dictionaries(image, label):
     return {IMAGE_INPUT_NAME: image, LABEL_INPUT_NAME: label}
 
 
-df = pd.read_csv("data_advanced_model.csv")
+"""LOAD DATAFRAMES"""
+df = pd.read_csv("data_advanced_model_linux.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
 # df = pd.read_csv("data_advanced_model.csv")
-train = df[df['train/test'] == 'train']
-test = df[df['train/test'] == 'test']
+train_df = df[df['train/test'] == 'train'].copy()
+test_df = df[df['train/test'] == 'test'].copy()
 
-train = train[['path', 'cat/dog', 'breed']]
-test = test[['path', 'cat/dog', 'breed']]
-num_of_classes = len(set(train['breed']))
+train_df = train_df[['path', 'cat/dog', 'breed']]
+# test = test[['path', 'cat/dog', 'breed']]
+test_df = test_df[['path', 'cat/dog', 'breed']]
+num_of_classes = len(set(train_df['breed']))
 
+"""CREATE IMAGE GENERATORS"""
+train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+train_generator = train_data_gen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
+                                                     class_mode="categorical", target_size=INPUT_SHAPE[:2],
+                                                     batch_size=TRAIN_BATCH_SIZE)
 
-# def generator(train_or_test, df, x_col, y_col, class_mode="categorical"):
-def generator(train_or_test):
-    """This function is used in order to create the tensorflow.data.Dataset object
-    that will read data from dataframe"""
-    if train_or_test == 'train':
-        train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
-        return train_data_gen.flow_from_dataframe(dataframe=train, x_col="path", y_col="breed",
-                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                                  batch_size=BATCH_SIZE)
-    else:  # test
-        test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
-        return test_data_gen.flow_from_dataframe(dataframe=test, x_col="path", y_col="breed",
-                                                 class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                                 batch_size=BATCH_SIZE)
+test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
+                                                   class_mode="categorical", target_size=INPUT_SHAPE[:2],
+                                                   batch_size=1, shuffle=False)  # shuffle False for test, batch_size=1
 
-
+"""PREPARE TENSORFLOW DATASETS FOR TRAIN, TEST"""
 train_dataset = tf.data.Dataset.from_generator(
-    generator, args=["train"],
+    lambda: train_generator,
     output_types=(tf.float32, tf.float32),
-    output_shapes=([BATCH_SIZE] + INPUT_SHAPE, (BATCH_SIZE, num_of_classes)))
+    output_shapes=([TRAIN_BATCH_SIZE] + INPUT_SHAPE, (TRAIN_BATCH_SIZE, num_of_classes)))
 
 # convert the dataset to the desired format
 train_dataset = train_dataset.map(convert_to_dictionaries)
 
 # same for test data
 test_dataset = tf.data.Dataset.from_generator(
-    generator, args=["test"],
+    lambda: test_generator,
     output_types=(tf.float32, tf.float32),
-    output_shapes=([BATCH_SIZE] + INPUT_SHAPE, (BATCH_SIZE, num_of_classes)))
+    output_shapes=([1] + INPUT_SHAPE, (1, num_of_classes)))
 test_dataset = test_dataset.map(convert_to_dictionaries)
+test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle = False
 
+"""DEFINE BASE MODEL"""
 model = ResNet50(weights=None, classes=num_of_classes, input_shape=INPUT_SHAPE)
+# TODO fit this model?? I think not needed
 
-"""############################# NSL #############################"""
+"""NSL"""
 adversarial_config = nsl.configs.make_adv_reg_config(multiplier=0.2, adv_step_size=0.2, adv_grad_norm='infinity')
-adversarial_model = nsl.keras.AdversarialRegularization(model, adv_config=adversarial_config)
+adversarial_model = nsl.keras.AdversarialRegularization(model, label_keys=[LABEL_INPUT_NAME],
+                                                        adv_config=adversarial_config)
 
-adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
-adversarial_model.fit(train_dataset, epochs=7, steps_per_epoch=50)
+adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+print('============ fit adversarial model ============')
+adversarial_model.fit(train_dataset, epochs=10)  # TODO change, take best, add validation?
 
-results = adversarial_model.evaluate(test_dataset)  # TODO
-print(results)
-
-"""GRAPH SIMILARITY REPRESENTATION - GET THE LAST LAYER'S OUTPUT BEFORE PREDICTIONS"""
-# from keras import backend as K
-# layer_function = K.function([model.layers[0].input], [model.layers[-2].output])
-# # that's the representation of the layer one before the last
-# layer_output = layer_function(train_dataset.__iter__().next())[0]
+print('================== inference ==================')
+# predictions = adversarial_model.predict(test_dataset)  # TODO
+result = adversarial_model.evaluate(test_dataset)
+print(dict(zip(adversarial_model.metrics_names, result)))
 
 """
 ############################################
@@ -89,6 +90,13 @@ DEAD CODE ISLAND
 ############################################
 ############################################
 """
+"""GRAPH SIMILARITY REPRESENTATION - GET THE LAST LAYER'S OUTPUT BEFORE PREDICTIONS"""
+# from keras import backend as K
+# layer_function = K.function([model.layers[0].input], [model.layers[-2].output])
+# # that's the representation of the layer one before the last
+# layer_output = layer_function(train_dataset.__iter__().next())[0]
+
+
 # def normalize(features):
 #     features[IMAGE_INPUT_NAME] = tf.cast(
 #         features[IMAGE_INPUT_NAME], dtype=tf.float32) / 255.0
@@ -121,12 +129,11 @@ DEAD CODE ISLAND
 # mnist_test_dataset = datasets['test']
 #
 
-#
 # train_dataset = mnist_train_dataset.map(normalize).shuffle(10000).batch(HPARAMS.batch_size).map(convert_to_tuples)
 
 
-# test_dataset = test_dataset.map(normalize).batch(HPARAMS.batch_size).map(convert_to_tuples)
-#
+# test_dataset = mnist_test_dataset.map(normalize).batch(BATCH_SIZE).map(convert_to_tuples)
+
 #
 # def build_base_model(hparams):
 #     """Builds a model according to the architecture defined in `hparams`."""
