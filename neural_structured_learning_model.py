@@ -77,9 +77,8 @@ adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', met
 print('============ fit adversarial model ============')
 # every epoch we go through all the train data images
 adversarial_model.fit(train_dataset,
-                      batch_size=TRAIN_BATCH_SIZE,
                       epochs=15,
-                      steps_per_epoch=int(np.ceil((1. * len(train_df)) / TRAIN_BATCH_SIZE)))
+                      steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 # TODO change, take best, add validation? batch_size parm?? steps parm??
 
 print('================== inference ==================')

@@ -65,7 +65,6 @@ Y_pred = []
 for i in range(len(test_set)):
     img = image.load_img(path=test_set.path[i], target_size=INPUT_SHAPE)
     img = image.img_to_array(img)
-    # TODO rescale data
     test_img = img.reshape([BATCH_SIZE] + INPUT_SHAPE)
     img_class = model.predict(test_img)
     prediction = img_class[0]
