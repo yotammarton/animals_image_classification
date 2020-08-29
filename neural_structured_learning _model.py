@@ -7,6 +7,7 @@ import tensorflow as tf
 import neural_structured_learning as nsl
 from tensorflow.keras.applications.resnet50 import ResNet50
 import pandas as pd
+import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 IMAGE_INPUT_NAME = 'input_1'  # if experiencing problems with this change to value of 'model.layers[0].name'
@@ -74,7 +75,12 @@ adversarial_model = nsl.keras.AdversarialRegularization(model, label_keys=[LABEL
 
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit adversarial model ============')
-adversarial_model.fit(train_dataset, epochs=10)  # TODO change, take best, add validation?
+# every epoch we go through all the train data images
+adversarial_model.fit(train_dataset,
+                      batch_size=TRAIN_BATCH_SIZE,
+                      epochs=15,
+                      steps_per_epoch=int(np.ceil((1. * len(train_df)) / TRAIN_BATCH_SIZE)))
+# TODO change, take best, add validation? batch_size parm?? steps parm??
 
 print('================== inference ==================')
 # predictions = adversarial_model.predict(test_dataset)  # TODO
