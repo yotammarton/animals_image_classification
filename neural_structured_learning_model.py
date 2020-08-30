@@ -68,7 +68,8 @@ model = ResNet50(weights=None, classes=num_of_classes, input_shape=INPUT_SHAPE)
 
 # test the ResNet50 model first
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
-model.fit(train_dataset, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+model.save_weights('ResNet50_yotam_weights.h5')
 result = model.evaluate(test_dataset)
 print(dict(zip(model.metrics_names, result)))
 exit()
