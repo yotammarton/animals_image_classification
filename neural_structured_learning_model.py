@@ -62,10 +62,16 @@ test_dataset = test_dataset.map(convert_to_dictionaries)
 # for test data we dont want to generate infinite data, we just want the amount of data in the test (that's why take())
 test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle=False
 
-
 """DEFINE BASE MODEL"""
 model = ResNet50(weights=None, classes=num_of_classes, input_shape=INPUT_SHAPE)
-# TODO fit this model?? I think not needed
+# TODO  - basically in the tutorial they didn't fit this model. the only fit() call is for the adversarial.
+
+# test the ResNet50 model first
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
+model.fit(train_dataset, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+result = model.evaluate(test_dataset)
+print(dict(zip(model.metrics_names, result)))
+exit()
 
 """NSL"""
 adversarial_config = nsl.configs.make_adv_reg_config(multiplier=0.2, adv_step_size=0.2, adv_grad_norm='infinity')
@@ -75,7 +81,7 @@ adversarial_model = nsl.keras.AdversarialRegularization(model, label_keys=[LABEL
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit adversarial model ============')
 # every epoch we go through all the train data images
-adversarial_model.fit(train_dataset, epochs=15, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+adversarial_model.fit(train_dataset, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 # TODO change, take best, add validation?
 
 print('================== inference ==================')
