@@ -52,13 +52,13 @@ train_dataset = tf.data.Dataset.from_generator(
     lambda: train_generator,
     output_types=(tf.float32, tf.float32))
 # convert the dataset to the desired format of NSL (dictionaries)
-train_dataset = train_dataset.map(convert_to_dictionaries)
+# train_dataset = train_dataset.map(convert_to_dictionaries)
 
 # same for test data
 test_dataset = tf.data.Dataset.from_generator(
     lambda: test_generator,
     output_types=(tf.float32, tf.float32))
-test_dataset = test_dataset.map(convert_to_dictionaries)
+# test_dataset = test_dataset.map(convert_to_dictionaries)
 # for test data we dont want to generate infinite data, we just want the amount of data in the test (that's why take())
 test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle=False
 
