@@ -49,7 +49,7 @@ model = ResNet50(weights=None, classes=num_of_classes)
 # print(model.summary())
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit model ============')
-model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+model.fit(train_generator, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 
 print('============ predict model ============')
 # Let’s have a look at the unique categories in the training data
