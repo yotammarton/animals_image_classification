@@ -24,7 +24,7 @@ train_df = df[df['train/test'] == 'train']
 test_df = df[df['train/test'] == 'test']
 train_df = train_df[['path', 'cat/dog', 'breed']]
 test_df = test_df[['path', 'cat/dog', 'breed']]
-num_of_classes = len(set(train_df['breed']))
+num_of_classes = len(set(train_df['cat/dog']))
 
 dogs_train_df = train_df[train_df['cat/dog'] == 'dog']
 dogs_test_df = test_df[test_df['cat/dog'] == 'dog']
