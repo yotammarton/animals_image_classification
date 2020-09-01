@@ -11,71 +11,60 @@ import pandas as pd
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing import image
 
+TRAIN_BATCH_SIZE = 32
+INPUT_SHAPE = [224, 224, 3]  # images will be resized to this shape, this is also the dims for layers
+
+"""LOAD DATAFRAMES"""
+
 df = pd.read_csv("data_advanced_model.csv")
 # df = pd.read_csv("mini_data_advanced_model.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
-training_set = df[df['train/test'] == 'train']
-full_testing_set = df[df['train/test'] == 'test']
-training_set = training_set[['path', 'cat/dog', 'breed']]
-full_testing_set = full_testing_set[['path', 'cat/dog', 'breed']]
+train_df = df[df['train/test'] == 'train']
+test_df = df[df['train/test'] == 'test']
+train_df = train_df[['path', 'cat/dog', 'breed']]
+test_df = test_df[['path', 'cat/dog', 'breed']]
+num_of_classes = len(set(train_df['breed']))
 
-training_set.reset_index(drop=True, inplace=True)
-print(training_set.head())
+"""CREATE IMAGE GENERATORS"""
+train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
+                                                    class_mode="categorical", arget_size=INPUT_SHAPE[:2],
+                                                    batch_size=TRAIN_BATCH_SIZE)
 
-train_dataGen = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
-train_generator = train_dataGen.flow_from_dataframe(dataframe=training_set, directory="", x_col="path",
-                                                    y_col="breed", class_mode="categorical", target_size=(224, 224),
-                                                    batch_size=32)
+test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
+                                                   class_mode="categorical", target_size=INPUT_SHAPE[:2],
+                                                   batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
 
-num_of_classes = len(set(training_set['breed']))
+"""PREPARE TENSORFLOW DATASETS FOR TEST"""
+test_dataset = tf.data.Dataset.from_generator(
+    lambda: test_generator,
+    output_types=(tf.float32, tf.float32))
+# for test data we dont want to generate infinite data, we just want the amount of data in the test (that's why take())
+test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle=False
+
 model = ResNet50(weights=None, classes=num_of_classes)
+# print(model.summary())
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+print('============ fit model ============')
+model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 
-# compile the network to initialize the metrics, loss and weights for the network
-# model.compile()
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['categorical_accuracy', 'accuracy'])
-
-# Let’s have a look at the description of our CNN
-# model.summary()
-
-# train the classifier with the data we gathered by processing the images using ImageDataGenerator class
-# model.fit(train_generator, epochs=1, steps_per_epoch=20)
-model.fit(train_generator, epochs=50, steps_per_epoch=60)  # TODO what does the prints mean? what is the accuracy, train accuracy?
-
-full_testing_set.reset_index(drop=True, inplace=True)
-test_set = pd.DataFrame(full_testing_set['path'])
-test_labels = pd.DataFrame(full_testing_set['breed'])
-test_labels.reset_index(drop=True, inplace=True)
-
+print('============ predict model ============')
 # Let’s have a look at the unique categories in the training data
 classes = train_generator.class_indices
-
 # We will use a reverse of the above dictionary to later convert the predictions to actual classes
 inverted_classes = dict(map(reversed, classes.items()))
 print(inverted_classes)
+predictions = model.predict(test_dataset)
+predictions = tf.argmax(predictions, axis=-1).numpy()
+inverted_class_predictions = [inverted_classes[i] for i in predictions]
 
-Y_pred_prob = []
+test_df['flat_prediction'] = inverted_class_predictions
+print(test_df)
 
-for i in range(len(test_set)):
-    img = image.load_img(path=test_set.path[i], target_size=(224, 224, 3))
-    img = image.img_to_array(img)
-    img = img / 255.0  # TODO change?
-    test_img = img.reshape((1, 224, 224, 3))
-    img_class = model.predict(test_img)
-    prediction = img_class[0]
-    Y_pred_prob.append(prediction)
+accuracy = len(test_df[test_df['breed'] == test_df['flat_prediction']]) / len(test_df)
+print(f'\nAnimal breed flat accuracy: {accuracy}')
 
-if Y_pred_prob:
-    Y_pred = tf.argmax(Y_pred_prob, axis=-1).numpy()
-    Y_pred = [inverted_classes[i] for i in Y_pred]
-
-    full_testing_set['flat prediction'] = Y_pred
-    print(full_testing_set)
-
-
-accuracy = len(full_testing_set[full_testing_set['breed'] == full_testing_set['flat prediction']])/len(full_testing_set)
-print()
-print(f'Animal breed flat accuracy: {accuracy}')
-
-# full_testing_set.to_csv('advanced_flat_model_output_test_df.zip')
+# test_df.to_csv('advanced_flat_model_output_test_df.zip')

@@ -13,7 +13,9 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 IMAGE_INPUT_NAME = 'input_1'  # if experiencing problems with this change to value of 'model.layers[0].name'
 LABEL_INPUT_NAME = 'label'
 TRAIN_BATCH_SIZE = 32
-INPUT_SHAPE = [128, 128, 3]  # images will be resized to this shape, this is also the dims for layers
+# images will be resized to this shape by ImageDataGenerator,
+# if this shape is different from the input layer shape of 'model', model will resize also to its shape
+INPUT_SHAPE = [224, 224, 3]
 
 
 # TODO choose different shape?
@@ -27,12 +29,9 @@ df = pd.read_csv("data_advanced_model_linux.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
-# df = pd.read_csv("data_advanced_model.csv")
 train_df = df[df['train/test'] == 'train']
 test_df = df[df['train/test'] == 'test']
-
 train_df = train_df[['path', 'cat/dog', 'breed']]
-# test = test[['path', 'cat/dog', 'breed']]
 test_df = test_df[['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
 
@@ -63,14 +62,15 @@ test_dataset = test_dataset.map(convert_to_dictionaries)
 test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle=False
 
 """DEFINE BASE MODEL"""
-model = ResNet50(weights=None, classes=num_of_classes, input_shape=INPUT_SHAPE)
+model = ResNet50(weights=None, classes=num_of_classes)
 # TODO  - basically in the tutorial they didn't fit this model. the only fit() call is for the adversarial.
 
 # # test the ResNet50 model - not needed for NSL
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit base model ============')
 model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-model.save_weights('ResNet50_yotam_weights.h5')
+
+# model.save_weights('ResNet50_yotam_weights.h5')
 print('================== inference ==================')
 result = model.evaluate(test_dataset)  # without the .map()
 print(dict(zip(model.metrics_names, result)))
@@ -205,7 +205,7 @@ DEAD CODE ISLAND
 # test_set_for_adv_model = test_dataset.map(convert_to_dictionaries)
 
 
-# flow_from_dataframe_args = [training_set, None, 'path', 'breed', None, (128, 128),
+# flow_from_dataframe_args = [train_df, None, 'path', 'breed', None, (128, 128),
 #                   'rgb', None, 'categorical', 1, True, None, None,
 #                   '', 'png', None, 'nearest', True]
 
