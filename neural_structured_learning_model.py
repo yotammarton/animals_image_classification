@@ -66,14 +66,14 @@ model = ResNet50(weights=None, classes=num_of_classes)
 # TODO  - basically in the tutorial they didn't fit this model. the only fit() call is for the adversarial.
 
 # # test the ResNet50 model - not needed for NSL
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-print('============ fit base model ============')
-model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-
-# model.save_weights('ResNet50_yotam_weights.h5')
-print('================== inference ==================')
-result = model.evaluate(test_dataset)  # without the .map()
-print(dict(zip(model.metrics_names, result)))
+# model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+# print('============ fit base model ============')
+# model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+#
+# # model.save_weights('ResNet50_yotam_weights.h5')
+# print('================== inference ==================')
+# result = model.evaluate(test_dataset)  # without the .map()
+# print(dict(zip(model.metrics_names, result)))
 
 """NSL"""
 adversarial_config = nsl.configs.make_adv_reg_config(multiplier=0.2, adv_step_size=0.2, adv_grad_norm='infinity')
@@ -84,7 +84,7 @@ adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', met
 # TODO different loss?
 print('============ fit adversarial model ============')
 # every epoch we go through all the train data images
-adversarial_model.fit(train_dataset, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+adversarial_model.fit(train_dataset, epochs=15, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 # TODO change, take best, add validation?
 
 print('================== inference ==================')
@@ -92,56 +92,58 @@ print('================== inference ==================')
 result = adversarial_model.evaluate(test_dataset)
 print(dict(zip(adversarial_model.metrics_names, result)))
 
+"""########################"""
 
-def simple_model():
-    class HParams(object):
-        def __init__(self):
-            self.input_shape = INPUT_SHAPE
-            self.num_classes = 37
-            self.conv_filters = [32, 64, 64]
-            self.kernel_size = (3, 3)
-            self.pool_size = (2, 2)
-            self.num_fc_units = [64]
-            self.batch_size = 32
-            self.epochs = 30
-            self.adv_multiplier = 0.2
-            self.adv_step_size = 0.2
-            self.adv_grad_norm = 'infinity'
-
-    HPARAMS = HParams()
-
-    def build_base_model(hparams):
-        """Builds a model according to the architecture defined in `hparams`."""
-        inputs = tf.keras.Input(
-            shape=hparams.input_shape, dtype=tf.float32, name=IMAGE_INPUT_NAME)
-
-        x = inputs
-        for i, num_filters in enumerate(hparams.conv_filters):
-            x = tf.keras.layers.Conv2D(
-                num_filters, hparams.kernel_size, activation='relu')(
-                x)
-            if i < len(hparams.conv_filters) - 1:
-                # max pooling between convolutional layers
-                x = tf.keras.layers.MaxPooling2D(hparams.pool_size)(x)
-        x = tf.keras.layers.Flatten()(x)
-        for num_units in hparams.num_fc_units:
-            x = tf.keras.layers.Dense(num_units, activation='relu')(x)
-        pred = tf.keras.layers.Dense(hparams.num_classes, activation='softmax')(x)
-        model = tf.keras.Model(inputs=inputs, outputs=pred)
-        return model
-
-    base_model = build_base_model(HPARAMS)
-
-    base_model.compile(optimizer='adam', loss='categorical_crossentropy',
-                       metrics=['acc'])
-    """try simple model"""
-    print('================== fit simple model ==================')
-    print(base_model.summary())
-    base_model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-    print('================== inference ==================')
-    result = base_model.evaluate(test_dataset)
-    print(dict(zip(base_model.metrics_names, result)))
-
+#
+# def simple_model():
+#     class HParams(object):
+#         def __init__(self):
+#             self.input_shape = INPUT_SHAPE
+#             self.num_classes = 37
+#             self.conv_filters = [32, 64, 64]
+#             self.kernel_size = (3, 3)
+#             self.pool_size = (2, 2)
+#             self.num_fc_units = [64]
+#             self.batch_size = 32
+#             self.epochs = 30
+#             self.adv_multiplier = 0.2
+#             self.adv_step_size = 0.2
+#             self.adv_grad_norm = 'infinity'
+#
+#     HPARAMS = HParams()
+#
+#     def build_base_model(hparams):
+#         """Builds a model according to the architecture defined in `hparams`."""
+#         inputs = tf.keras.Input(
+#             shape=hparams.input_shape, dtype=tf.float32, name=IMAGE_INPUT_NAME)
+#
+#         x = inputs
+#         for i, num_filters in enumerate(hparams.conv_filters):
+#             x = tf.keras.layers.Conv2D(
+#                 num_filters, hparams.kernel_size, activation='relu')(
+#                 x)
+#             if i < len(hparams.conv_filters) - 1:
+#                 # max pooling between convolutional layers
+#                 x = tf.keras.layers.MaxPooling2D(hparams.pool_size)(x)
+#         x = tf.keras.layers.Flatten()(x)
+#         for num_units in hparams.num_fc_units:
+#             x = tf.keras.layers.Dense(num_units, activation='relu')(x)
+#         pred = tf.keras.layers.Dense(hparams.num_classes, activation='softmax')(x)
+#         model = tf.keras.Model(inputs=inputs, outputs=pred)
+#         return model
+#
+#     base_model = build_base_model(HPARAMS)
+#
+#     base_model.compile(optimizer='adam', loss='categorical_crossentropy',
+#                        metrics=['acc'])
+#     """try simple model"""
+#     print('================== fit simple model ==================')
+#     print(base_model.summary())
+#     base_model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+#     print('================== inference ==================')
+#     result = base_model.evaluate(test_dataset)
+#     print(dict(zip(base_model.metrics_names, result)))
+#
 
 """
 ############################################
