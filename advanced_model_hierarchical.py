@@ -36,10 +36,11 @@ animal_model = ResNet50(weights=None, classes=num_of_classes)
 animal_model.compile(optimizer='adam', loss='BinaryCrossentropy', metrics=['accuracy'])
 
 # Let’s have a look at the description of our CNN
-animal_model.summary()
+# animal_model.summary()
 
 # train the classifier with the data we gathered by processing the images using ImageDataGenerator class
 animal_model.fit(train_generator, epochs=1, steps_per_epoch=5)
+# animal_model.fit(train_generator, epochs=30, steps_per_epoch=30)
 
 full_testing_set.reset_index(drop=True, inplace=True)
 test_set = pd.DataFrame(full_testing_set['path'])
@@ -59,6 +60,7 @@ Y_pred_prob = []
 for i in range(len(test_set)):
     img = image.load_img(path= test_set.path[i],target_size=(224,224,3))
     img = image.img_to_array(img)
+    img = img / 255.0  # TODO change?
     test_img = img.reshape((1,224,224,3))
     img_class = animal_model.predict(test_img)
     prediction = img_class[0]
@@ -88,8 +90,9 @@ dogs_train_generator = dogs_train_dataGen.flow_from_dataframe(dataframe=dogs_tra
 num_of_classes = len(set(dogs_training_set['breed']))
 dogs_model = ResNet50(weights=None, classes=num_of_classes)
 dogs_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-dogs_model.summary()
+# dogs_model.summary()
 dogs_model.fit(dogs_train_generator, epochs=1, steps_per_epoch=20)
+# dogs_model.fit(dogs_train_generator, epochs=30, steps_per_epoch=30)
 
 dogs_test_set = pd.DataFrame(dogs_full_testing_set['path'])
 dogs_test_labels = pd.DataFrame(dogs_full_testing_set['breed'])
@@ -103,6 +106,7 @@ dogs_Y_pred_prob = []
 for i in range(len(dogs_test_set)):
     img = image.load_img(path=dogs_test_set.path[i],target_size=(224,224,3))
     img = image.img_to_array(img)
+    img = img / 255.0  # TODO change?
     test_img = img.reshape((1,224,224,3))
     img_class = dogs_model.predict(test_img)
     prediction = img_class[0]
@@ -117,6 +121,7 @@ print(dogs_full_testing_set.head())
 
 
 ### cat breed prediction ###
+
 cats_training_set = training_set[training_set['cat/dog'] == 'cat']
 
 cats_train_dataGen = ImageDataGenerator(rescale=1./255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
@@ -127,8 +132,10 @@ cats_train_generator = cats_train_dataGen.flow_from_dataframe(dataframe=cats_tra
 num_of_classes = len(set(cats_training_set['breed']))
 cats_model = ResNet50(weights=None, classes=num_of_classes)
 cats_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-cats_model.summary()
+# cats_model.summary()
+# cats_model.fit(cats_train_generator, epochs=30, steps_per_epoch=30)
 cats_model.fit(cats_train_generator, epochs=1, steps_per_epoch=20)
+
 
 cats_test_set = pd.DataFrame(cats_full_testing_set['path'])
 cats_test_labels = pd.DataFrame(cats_full_testing_set['breed'])
@@ -141,9 +148,10 @@ cats_inverted_classes = dict(map(reversed, cats_classes.items()))
 cats_Y_pred_prob = []
 
 for i in range(len(cats_test_set)):
-    img = image.load_img(path=cats_test_set.path[i],target_size=(224,224,3))
+    img = image.load_img(path=cats_test_set.path[i], target_size=(224, 224, 3))
     img = image.img_to_array(img)
-    test_img = img.reshape((1,224,224,3))
+    img = img / 255.0  # TODO change?
+    test_img = img.reshape((1, 224, 224, 3))
     img_class = cats_model.predict(test_img)
     prediction = img_class[0]
     cats_Y_pred_prob.append(prediction)
@@ -163,10 +171,10 @@ print(concat_df.head())
 animal_binary_accuracy = len(concat_df[concat_df['cat/dog'] == concat_df['animal_prediction']])/len(concat_df)
 print(f'Animal binary accuracy: {animal_binary_accuracy}')
 
-dogs_breed_accuracy = len(concat_df[concat_df['animal_prediction']=='dog'][concat_df['breed'] == concat_df['breed_prediction']])/len(concat_df[concat_df['cat/dog']=='dog'])
+dogs_breed_accuracy = len(concat_df[concat_df['animal_prediction'] == 'dog'][concat_df['breed'] == concat_df['breed_prediction']])/len(concat_df[concat_df['cat/dog']=='dog'])
 print(f'Dogs breed accuracy (out of all dogs): {dogs_breed_accuracy}')
 
-cats_breed_accuracy = len(concat_df[concat_df['animal_prediction']=='cat'][concat_df['breed'] == concat_df['breed_prediction']])/len(concat_df[concat_df['cat/dog']=='cat'])
+cats_breed_accuracy = len(concat_df[concat_df['animal_prediction'] == 'cat'][concat_df['breed'] == concat_df['breed_prediction']])/len(concat_df[concat_df['cat/dog']=='cat'])
 print(f'Cats breed accuracy (out of all cats): {cats_breed_accuracy}')
 
 final_accuracy = len(concat_df[concat_df['breed'] == concat_df['breed_prediction']])/len(concat_df)
