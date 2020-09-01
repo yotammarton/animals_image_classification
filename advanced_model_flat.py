@@ -1,18 +1,23 @@
 from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.vgg19 import VGG19
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.python.keras.applications.efficientnet import EfficientNetB7
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten
-import matplotlib.pyplot as plt
 import pandas as pd
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.preprocessing import image
+import sys
 
+model_name = sys.argv[1]
+
+print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+print('NEW RUN FOR FLAT MODEL')
+print(f'MODEL = {model_name}')
+exit()
 TRAIN_BATCH_SIZE = 32
-INPUT_SHAPE = [224, 224, 3]  # images will be resized to this shape, this is also the dims for layers
+INPUT_SHAPE = [299, 299, 3] if model_name == 'inception_v3' else [224, 224, 3]
+# images will be resized to this shape, this is also the dims for layers
 
 """LOAD DATAFRAMES"""
 
@@ -45,7 +50,19 @@ test_dataset = tf.data.Dataset.from_generator(
 # for test data we dont want to generate infinite data, we just want the amount of data in the test (that's why take())
 test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle=False
 
-model = ResNet50(weights=None, classes=num_of_classes)
+if model_name == 'resnet50':
+    model = ResNet50(weights=None, classes=num_of_classes)
+elif model_name == 'vgg16':
+    model = VGG16(weights=None, classes=num_of_classes)
+elif model_name == 'vgg19':
+    model = VGG19(weights=None, classes=num_of_classes)
+elif model_name == 'inception_v3':
+    model = InceptionV3(weights=None, classes=num_of_classes)
+elif model_name == 'efficientnetb7':
+    model = EfficientNetB7(weights=None, classes=num_of_classes)
+else:
+    raise ValueError("not supported model name")
+
 # print(model.summary())
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit flat model ============')

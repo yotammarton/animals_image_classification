@@ -1,18 +1,23 @@
 from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.resnet50 import preprocess_input, decode_predictions
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.applications.vgg19 import VGG19
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.python.keras.applications.efficientnet import EfficientNetB7
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten
-import matplotlib.pyplot as plt
 import pandas as pd
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.preprocessing import image
+import sys
+
+model_name = sys.argv[1]
+
+print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+print('NEW RUN FOR HIERARCHICAL MODEL')
+print(f'MODEL = {model_name}')
 
 TRAIN_BATCH_SIZE = 32
-INPUT_SHAPE = [224, 224, 3]  # images will be resized to this shape, this is also the dims for layers
+INPUT_SHAPE = [299, 299, 3] if model_name == 'inception_v3' else [224, 224, 3]
+# images will be resized to this shape, this is also the dims for layers
 
 """LOAD DATAFRAMES"""
 df = pd.read_csv("data_advanced_model_linux.csv")
@@ -94,21 +99,57 @@ cats_test_dataset = cats_test_dataset.take(len(cats_test_df))  # Note: test_gene
 
 """TRAIN MODELS"""
 # binary model #
-binary_model = ResNet50(weights=None, classes=num_of_classes)
+if model_name == 'resnet50':
+    binary_model = ResNet50(weights=None, classes=num_of_classes)
+elif model_name == 'vgg16':
+    binary_model = VGG16(weights=None, classes=num_of_classes)
+elif model_name == 'vgg19':
+    binary_model = VGG19(weights=None, classes=num_of_classes)
+elif model_name == 'inception_v3':
+    binary_model = InceptionV3(weights=None, classes=num_of_classes)
+elif model_name == 'efficientnetb7':
+    binary_model = EfficientNetB7(weights=None, classes=num_of_classes)
+else:
+    raise ValueError("not supported model name")
+
 # print(model.summary())
 binary_model.compile(optimizer='adam', loss='BinaryCrossentropy', metrics=['accuracy'])
 print('============ binary model fit ============')
 binary_model.fit(train_generator, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 
 # dogs model #
-dogs_model = ResNet50(weights=None, classes=dogs_num_of_classes)
+if model_name == 'resnet50':
+    dogs_model = ResNet50(weights=None, classes=dogs_num_of_classes)
+elif model_name == 'vgg16':
+    dogs_model = VGG16(weights=None, classes=dogs_num_of_classes)
+elif model_name == 'vgg19':
+    dogs_model = VGG19(weights=None, classes=dogs_num_of_classes)
+elif model_name == 'inception_v3':
+    dogs_model = InceptionV3(weights=None, classes=dogs_num_of_classes)
+elif model_name == 'efficientnetb7':
+    dogs_model = EfficientNetB7(weights=None, classes=dogs_num_of_classes)
+else:
+    raise ValueError("not supported model name")
+
 # print(dogs_model.summary())
 dogs_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ dogs model fit ============')
 dogs_model.fit(dogs_train_generator, epochs=20, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE))
 
 # cats model #
-cats_model = ResNet50(weights=None, classes=cats_num_of_classes)
+if model_name == 'resnet50':
+    cats_model = ResNet50(weights=None, classes=cats_num_of_classes)
+elif model_name == 'vgg16':
+    cats_model = VGG16(weights=None, classes=cats_num_of_classes)
+elif model_name == 'vgg19':
+    cats_model = VGG19(weights=None, classes=cats_num_of_classes)
+elif model_name == 'inception_v3':
+    cats_model = InceptionV3(weights=None, classes=cats_num_of_classes)
+elif model_name == 'efficientnetb7':
+    cats_model = EfficientNetB7(weights=None, classes=cats_num_of_classes)
+else:
+    raise ValueError("not supported model name")
+
 # print(cats_model.summary())
 cats_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ cats model fit ============')
@@ -121,7 +162,7 @@ binary_result = binary_model.evaluate(test_dataset)
 print(dict(zip(binary_model.metrics_names, binary_result)))
 
 # dogs model #
-print('============ dogs model evaluate ============')
+print('============ cats model evaluate ============')
 dogs_result = dogs_model.evaluate(dogs_test_dataset)
 print(dict(zip(dogs_model.metrics_names, dogs_result)))
 
@@ -147,7 +188,23 @@ predicted_as_dogs_df = test_df[test_df['binary_prediction'] == 'dog']
 dogs_classes = dogs_train_generator.class_indices
 dogs_inverted_classes = dict(map(reversed, dogs_classes.items()))
 print(dogs_inverted_classes)
-dogs_predictions = dogs_model.predict(predicted_as_dogs_df)
+
+predicted_as_dogs_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+predicted_as_dogs_generator = predicted_as_dogs_data_gen.flow_from_dataframe(dataframe=predicted_as_dogs_df,
+                                                                             x_col="path",
+                                                                             y_col="breed",
+                                                                             class_mode="categorical",
+                                                                             target_size=INPUT_SHAPE[:2],
+                                                                             batch_size=1,
+                                                                             shuffle=False)
+
+predicted_as_dogs_dataset = tf.data.Dataset.from_generator(
+    lambda: predicted_as_dogs_generator,
+    output_types=(tf.float32, tf.float32))
+# for test data we dont want to generate infinite data, we just want the amount of data in the test (that's why take())
+predicted_as_dogs_dataset = predicted_as_dogs_dataset.take(len(predicted_as_dogs_df))
+
+dogs_predictions = dogs_model.predict(predicted_as_dogs_dataset)
 dogs_predictions = tf.argmax(dogs_predictions, axis=-1).numpy()
 dogs_predictions = [dogs_inverted_classes[i] for i in dogs_predictions]
 
@@ -159,7 +216,23 @@ predicted_as_cats_df = test_df[test_df['binary_prediction'] == 'cat']
 cats_classes = cats_train_generator.class_indices
 cats_inverted_classes = dict(map(reversed, cats_classes.items()))
 print(cats_inverted_classes)
-cats_predictions = cats_model.predict(predicted_as_cats_df)
+
+predicted_as_cats_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+predicted_as_cats_generator = predicted_as_cats_data_gen.flow_from_dataframe(dataframe=predicted_as_cats_df,
+                                                                             x_col="path",
+                                                                             y_col="breed",
+                                                                             class_mode="categorical",
+                                                                             target_size=INPUT_SHAPE[:2],
+                                                                             batch_size=1,
+                                                                             shuffle=False)
+
+predicted_as_cats_dataset = tf.data.Dataset.from_generator(
+    lambda: predicted_as_cats_generator,
+    output_types=(tf.float32, tf.float32))
+# for test data we dont want to generate infinite data, we just want the amount of data in the test (that's why take())
+predicted_as_cats_dataset = predicted_as_cats_dataset.take(len(predicted_as_cats_df))
+
+cats_predictions = cats_model.predict(predicted_as_cats_dataset)
 cats_predictions = tf.argmax(cats_predictions, axis=-1).numpy()
 cats_predictions = [cats_inverted_classes[i] for i in cats_predictions]
 
