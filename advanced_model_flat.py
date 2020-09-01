@@ -3,10 +3,10 @@ from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.applications.vgg19 import VGG19
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.python.keras.applications.efficientnet import EfficientNetB7
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import tensorflow as tf
 import pandas as pd
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import sys
 
 model_name = sys.argv[1]
@@ -14,7 +14,7 @@ model_name = sys.argv[1]
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
 print(f'MODEL = {model_name}')
-exit()
+
 TRAIN_BATCH_SIZE = 32
 INPUT_SHAPE = [299, 299, 3] if model_name == 'inception_v3' else [224, 224, 3]
 # images will be resized to this shape, this is also the dims for layers
