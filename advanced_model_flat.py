@@ -48,10 +48,10 @@ test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have
 model = ResNet50(weights=None, classes=num_of_classes)
 # print(model.summary())
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-print('============ fit model ============')
+print('============ fit flat model ============')
 model.fit(train_generator, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
 
-print('============ predict model ============')
+print('============ predict flat model ============')
 # Let’s have a look at the unique categories in the training data
 classes = train_generator.class_indices
 # We will use a reverse of the above dictionary to later convert the predictions to actual classes
