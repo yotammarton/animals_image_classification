@@ -15,8 +15,8 @@ TRAIN_BATCH_SIZE = 32
 INPUT_SHAPE = [224, 224, 3]  # images will be resized to this shape, this is also the dims for layers
 
 """LOAD DATAFRAMES"""
-df = pd.read_csv("data_advanced_model.csv")
-# df = pd.read_csv("mini_data_advanced_model.csv")
+# df = pd.read_csv("data_advanced_model.csv")
+df = pd.read_csv("mini_data_advanced_model.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
@@ -38,12 +38,12 @@ cats_num_of_classes = len(set(cats_train_df['breed']))
 # binary model #
 train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="cat/dog",
-                                                    class_mode="binary", arget_size=INPUT_SHAPE[:2],
+                                                    class_mode="categorical", arget_size=INPUT_SHAPE[:2],
                                                     batch_size=TRAIN_BATCH_SIZE)
 
 test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="cat/dog",
-                                                   class_mode="binary", target_size=INPUT_SHAPE[:2],
+                                                   class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                    batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
 
 # dogs model #
@@ -98,24 +98,24 @@ binary_model = ResNet50(weights=None, classes=num_of_classes)
 # print(model.summary())
 binary_model.compile(optimizer='adam', loss='BinaryCrossentropy', metrics=['accuracy'])
 print('============ binary model fit model ============')
-# binary_model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-binary_model.fit(train_generator, epochs=1, steps_per_epoch=1)
+binary_model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+# binary_model.fit(train_generator, epochs=1, steps_per_epoch=1)  # TODO delete
 
 # dogs model #
 dogs_model = ResNet50(weights=None, classes=dogs_num_of_classes)
 # print(dogs_model.summary())
 dogs_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ dogs model fit model ============')
-# dogs_model.fit(dogs_train_generator, epochs=30, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE))
-dogs_model.fit(dogs_train_generator, epochs=1, steps_per_epoch=1)
+dogs_model.fit(dogs_train_generator, epochs=30, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE))
+# dogs_model.fit(dogs_train_generator, epochs=1, steps_per_epoch=1)  # TODO delete
 
 # cats model #
 cats_model = ResNet50(weights=None, classes=cats_num_of_classes)
 # print(cats_model.summary())
 cats_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ cats model fit model ============')
-# cats_model.fit(cats_train_generator, epochs=30, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE))
-cats_model.fit(cats_train_generator, epochs=1, steps_per_epoch=1)
+cats_model.fit(cats_train_generator, epochs=30, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE))
+# cats_model.fit(cats_train_generator, epochs=1, steps_per_epoch=1)  # TODO delete
 
 
 """EVALUATE MODELS"""
