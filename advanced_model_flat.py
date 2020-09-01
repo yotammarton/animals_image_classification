@@ -16,7 +16,7 @@ INPUT_SHAPE = [224, 224, 3]  # images will be resized to this shape, this is als
 
 """LOAD DATAFRAMES"""
 
-df = pd.read_csv("data_advanced_model.csv")
+df = pd.read_csv("data_advanced_model_linux.csv")
 # df = pd.read_csv("mini_data_advanced_model.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
