@@ -10,7 +10,7 @@ import pandas as pd
 import sys
 
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""  # TODO
-# model_name = '' # choose your own model
+# model_name = 'vgg16'  # choose your own model: 'resnet50', 'vgg16', 'vgg19', 'inception_v3', 'efficientnetb7'
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR HIERARCHICAL MODEL')
@@ -44,7 +44,7 @@ cats_num_of_classes = len(set(cats_train_df['breed']))
 # binary model #
 train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="cat/dog",
-                                                    class_mode="categorical", arget_size=INPUT_SHAPE[:2],
+                                                    class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                     batch_size=TRAIN_BATCH_SIZE)
 
 test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
@@ -55,7 +55,7 @@ test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="pat
 # dogs model #
 dogs_train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 dogs_train_generator = dogs_train_dataGen.flow_from_dataframe(dataframe=dogs_train_df, x_col="path", y_col="breed",
-                                                              class_mode="categorical", arget_size=INPUT_SHAPE[:2],
+                                                              class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                               batch_size=TRAIN_BATCH_SIZE)
 
 dogs_test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
@@ -67,7 +67,7 @@ dogs_test_generator = dogs_test_data_gen.flow_from_dataframe(dataframe=dogs_test
 # cats model #
 cats_train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 cats_train_generator = cats_train_dataGen.flow_from_dataframe(dataframe=cats_train_df, x_col="path", y_col="breed",
-                                                              class_mode="categorical", arget_size=INPUT_SHAPE[:2],
+                                                              class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                               batch_size=TRAIN_BATCH_SIZE)
 
 cats_test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
@@ -113,10 +113,11 @@ elif model_name == 'efficientnetb7':
 else:
     raise ValueError("not supported model name")
 
-# print(model.summary())
+# print(binary_model.summary())
 binary_model.compile(optimizer='adam', loss='BinaryCrossentropy', metrics=['accuracy'])
 print('============ binary model fit ============')
 binary_model.fit(train_generator, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+# binary_model.fit(train_generator, epochs=1, steps_per_epoch=1)
 
 # dogs model #
 if model_name == 'resnet50':

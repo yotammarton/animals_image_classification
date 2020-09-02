@@ -10,7 +10,7 @@ import pandas as pd
 import sys
 
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""
-# model_name = '' # choose your own model
+model_name = 'vgg16'  # choose your own model: 'resnet50', 'vgg16', 'vgg19', 'inception_v3', 'efficientnetb7'
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
@@ -36,7 +36,7 @@ num_of_classes = len(set(train_df['breed']))
 """CREATE IMAGE GENERATORS"""
 train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
-                                                    class_mode="categorical", arget_size=INPUT_SHAPE[:2],
+                                                    class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                     batch_size=TRAIN_BATCH_SIZE)
 
 test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
@@ -68,6 +68,7 @@ else:
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit flat model ============')
 model.fit(train_generator, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+# model.fit(train_generator, epochs=1, steps_per_epoch=1)
 
 print('============ predict flat model ============')
 # Let’s have a look at the unique categories in the training data
