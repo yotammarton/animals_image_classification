@@ -9,7 +9,8 @@ import tensorflow as tf
 import pandas as pd
 import sys
 
-model_name = sys.argv[1]
+model_name = sys.argv[1] if len(sys.argv) > 1 else ""
+# model_name = '' # choose your own model
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')

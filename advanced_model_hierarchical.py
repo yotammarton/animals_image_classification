@@ -9,7 +9,8 @@ import tensorflow as tf
 import pandas as pd
 import sys
 
-model_name = sys.argv[1]
+model_name = sys.argv[1] if len(sys.argv) > 1 else ""  # TODO
+# model_name = '' # choose your own model
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR HIERARCHICAL MODEL')
@@ -162,7 +163,7 @@ binary_result = binary_model.evaluate(test_dataset)
 print(dict(zip(binary_model.metrics_names, binary_result)))
 
 # dogs model #
-print('============ cats model evaluate ============')
+print('============ dogs model evaluate ============')
 dogs_result = dogs_model.evaluate(dogs_test_dataset)
 print(dict(zip(dogs_model.metrics_names, dogs_result)))
 
@@ -250,6 +251,7 @@ print(f'Hierarchical animal binary accuracy: {binary_accuracy}')
 final_accuracy = len(concat_df[concat_df['breed'] == concat_df['breed_prediction']]) / len(concat_df)
 print(f'Hierarchical breed accuracy (out of 37): {final_accuracy}')
 
+# code falls here TODO
 dogs_breed_accuracy = len(
     predicted_as_dogs_df[predicted_as_dogs_df['breed'] == predicted_as_dogs_df['breed_prediction']]) / len(
     dogs_test_dataset)
