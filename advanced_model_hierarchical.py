@@ -16,7 +16,7 @@ print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR HIERARCHICAL MODEL')
 print(f'MODEL = {model_name}')
 
-TRAIN_BATCH_SIZE = 32
+TRAIN_BATCH_SIZE = 16 if model_name == 'efficientnetb7' else 32  # TODO keep the change?
 INPUT_SHAPE = [299, 299, 3] if model_name == 'inception_v3' else [224, 224, 3]
 # images will be resized to this shape, this is also the dims for layers
 
@@ -117,7 +117,7 @@ else:
 binary_model.compile(optimizer='adam', loss='BinaryCrossentropy', metrics=['accuracy'])
 print('============ binary model fit ============')
 binary_model.fit(train_generator, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-# binary_model.fit(train_generator, epochs=1, steps_per_epoch=1)
+# binary_model.fit(train_generator, epochs=1, steps_per_epoch=1) # TODO delete
 
 # dogs model #
 if model_name == 'resnet50':
@@ -137,6 +137,7 @@ else:
 dogs_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ dogs model fit ============')
 dogs_model.fit(dogs_train_generator, epochs=20, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE))
+# dogs_model.fit(dogs_train_generator, epochs=1, steps_per_epoch=1) # TODO delete
 
 # cats model #
 if model_name == 'resnet50':
@@ -156,6 +157,7 @@ else:
 cats_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ cats model fit ============')
 cats_model.fit(cats_train_generator, epochs=20, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE))
+# cats_model.fit(cats_train_generator, epochs=1, steps_per_epoch=1) # TODO delete
 
 """EVALUATE MODELS"""
 print('============ binary model evaluate ============')
@@ -220,6 +222,7 @@ cats_inverted_classes = dict(map(reversed, cats_classes.items()))
 print(cats_inverted_classes)
 
 predicted_as_cats_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+print(predicted_as_cats_df)
 predicted_as_cats_generator = predicted_as_cats_data_gen.flow_from_dataframe(dataframe=predicted_as_cats_df,
                                                                              x_col="path",
                                                                              y_col="breed",
@@ -244,6 +247,7 @@ print(predicted_as_cats_df)
 """RESULTS CALCULATION"""
 
 concat_df = pd.concat([predicted_as_dogs_df, predicted_as_cats_df])
+# concat_df = predicted_as_cats_df  # TODO delete
 print(concat_df.head())
 
 binary_accuracy = len(test_df[test_df['cat/dog'] == test_df['binary_prediction']]) / len(test_df)
@@ -255,10 +259,10 @@ print(f'Hierarchical breed accuracy (out of 37): {final_accuracy}')
 # code falls here TODO
 dogs_breed_accuracy = len(
     predicted_as_dogs_df[predicted_as_dogs_df['breed'] == predicted_as_dogs_df['breed_prediction']]) / len(
-    dogs_test_dataset)
+    dogs_test_df)
 print(f'Hierarchical dogs breed accuracy (out of 25): {dogs_breed_accuracy}')
 
 cats_breed_accuracy = len(
     predicted_as_cats_df[predicted_as_cats_df['breed'] == predicted_as_cats_df['breed_prediction']]) / len(
-    cats_test_dataset)
+    cats_test_df)
 print(f'Hierarchical cats breed accuracy (out of 12): {cats_breed_accuracy}')

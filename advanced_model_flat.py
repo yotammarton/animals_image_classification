@@ -10,13 +10,13 @@ import pandas as pd
 import sys
 
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""
-model_name = 'vgg16'  # choose your own model: 'resnet50', 'vgg16', 'vgg19', 'inception_v3', 'efficientnetb7'
+# model_name = 'efficientnetb7'  # choose your own model: 'resnet50', 'vgg16', 'vgg19', 'inception_v3', 'efficientnetb7'
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
 print(f'MODEL = {model_name}')
 
-TRAIN_BATCH_SIZE = 32
+TRAIN_BATCH_SIZE = 16 if model_name == 'efficientnetb7' else 32  # TODO keep the change?
 INPUT_SHAPE = [299, 299, 3] if model_name == 'inception_v3' else [224, 224, 3]
 # images will be resized to this shape, this is also the dims for layers
 
@@ -68,7 +68,7 @@ else:
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 print('============ fit flat model ============')
 model.fit(train_generator, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-# model.fit(train_generator, epochs=1, steps_per_epoch=1)
+# model.fit(train_generator, epochs=1, steps_per_epoch=1) # TODO delete
 
 print('============ predict flat model ============')
 # Let’s have a look at the unique categories in the training data
