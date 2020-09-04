@@ -148,7 +148,7 @@ early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 # TODO monitor = 'val_accuracy' / 'val_loss'
 
 print('============ fit flat model ============')
-model.fit(train_generator, epochs=1, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
+model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
           validation_data=val_dataset, callbacks=[checkpoint, early_stopping])
 model.load_weights(filepath=f'flat_weights_{model_name}.hdf5')
 
