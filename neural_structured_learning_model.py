@@ -9,7 +9,7 @@ from tensorflow.keras.applications.resnet50 import ResNet50
 import pandas as pd
 import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import EarlyStopping, ModelCheckpoint  # TODO added
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 IMAGE_INPUT_NAME = 'input_1'  # if experiencing problems with this change to value of 'model.layers[0].name'
 LABEL_INPUT_NAME = 'label'
@@ -31,7 +31,7 @@ df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
 train_df = df[df['train/test'] == 'train'][['path', 'cat/dog', 'breed']]
-val_df = df[df['train/test'] == 'validation'][['path', 'cat/dog', 'breed']]  # TODO added
+val_df = df[df['train/test'] == 'validation'][['path', 'cat/dog', 'breed']]
 test_df = df[df['train/test'] == 'test'][['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
 
@@ -40,7 +40,7 @@ train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_rang
 train_generator = train_data_gen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
                                                      class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                      batch_size=TRAIN_BATCH_SIZE)
-# TODO added
+
 val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path", y_col="breed",
                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
@@ -58,7 +58,6 @@ train_dataset = tf.data.Dataset.from_generator(
 # convert the dataset to the desired format of NSL (dictionaries)
 train_dataset = train_dataset.map(convert_to_dictionaries)
 
-# TODO added
 val_dataset = tf.data.Dataset.from_generator(
     lambda: val_generator,
     output_types=(tf.float32, tf.float32))
@@ -80,12 +79,13 @@ model = ResNet50(weights=None, classes=num_of_classes)
 # test the ResNet50 model - not needed for NSL
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-checkpoint = ModelCheckpoint(filepath='nsl_weights.hdf5', verbose=1, save_best_only=True)  # TODO added
-early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)  # TODO added # TODO 'val_accuracy'?
+checkpoint = ModelCheckpoint(filepath='nsl_weights.hdf5', verbose=1, save_best_only=True)
+# TODO monitor = 'val_accuracy' / 'val_loss'
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 
 print('============ fit base model ============')
 model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
-          validation_data=val_dataset, callbacks=[checkpoint, early_stopping])  # TODO added
+          validation_data=val_dataset, callbacks=[checkpoint, early_stopping])
 
 exit()
 
