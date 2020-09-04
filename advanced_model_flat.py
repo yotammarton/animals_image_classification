@@ -17,7 +17,7 @@ print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
 print(f'MODEL = {model_name}')
 
-TRAIN_BATCH_SIZE = 32  # if model_name == 'efficientnetb7' else 32  # TODO keep the change?
+TRAIN_BATCH_SIZE = 16 if model_name == 'efficientnetb7' else 32  # TODO keep the change?
 if model_name == 'inception_v3':
     INPUT_SHAPE = [299, 299, 3]
 elif model_name == 'efficientnetb7':
@@ -39,17 +39,26 @@ test_df = df[df['train/test'] == 'test'][['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
 
 """CREATE IMAGE GENERATORS"""
-train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+if model_name == 'efficientnetb7':
+    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+
+else:
+    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
                                                     class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                     batch_size=TRAIN_BATCH_SIZE)
-
-val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+if model_name == 'efficientnetb7':
+    val_data_gen = ImageDataGenerator()
+else:
+    val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path", y_col="breed",
                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                  batch_size=1, shuffle=False)
 
-test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+if model_name == 'efficientnetb7':
+    test_data_gen = ImageDataGenerator()
+else:
+    test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
                                                    class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                    batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
@@ -82,7 +91,7 @@ else:
 # print(model.summary())
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'flat_weights_{model_name}.hdf5', verbose=1, save_best_only=True)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 # TODO monitor = 'val_accuracy' / 'val_loss'
 
 print('============ fit flat model ============')
@@ -104,6 +113,6 @@ test_df['flat_prediction'] = inverted_class_predictions
 print(test_df)
 
 accuracy = len(test_df[test_df['breed'] == test_df['flat_prediction']]) / len(test_df)
-print(f'\nAnimal breed flat accuracy: {accuracy}')
+print(f'\n#RESULTS# Flat Animal breed accuracy: {accuracy}')
 
 # test_df.to_csv('advanced_flat_model_output_test_df.zip')

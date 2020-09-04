@@ -167,7 +167,7 @@ else:
 # print(binary_model.summary())
 binary_model.compile(optimizer='adam', loss='BinaryCrossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'advanced_weights_binary_{model_name}.hdf5', verbose=1, save_best_only=True)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 
 print('============ binary model fit ============')
 binary_model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
@@ -178,7 +178,7 @@ binary_model.load_weights(filepath=f'advanced_weights_binary_{model_name}.hdf5')
 # print(dogs_model.summary())
 dogs_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'advanced_weights_dogs_{model_name}.hdf5', verbose=1, save_best_only=True)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 print('============ dogs model fit ============')
 dogs_model.fit(dogs_train_generator, epochs=100, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
                validation_data=dogs_val_dataset, callbacks=[checkpoint, early_stopping])
@@ -188,7 +188,7 @@ dogs_model.load_weights(filepath=f'advanced_weights_dogs_{model_name}.hdf5')
 # print(cats_model.summary())
 cats_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'advanced_weights_cats_{model_name}.hdf5', verbose=1, save_best_only=True)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 print('============ cats model fit ============')
 cats_model.fit(cats_train_generator, epochs=100, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
                validation_data=cats_val_dataset, callbacks=[checkpoint, early_stopping])
@@ -214,7 +214,7 @@ print(dict(zip(cats_model.metrics_names, cats_result)))
 # binary prediction #
 classes = train_generator.class_indices
 inverted_classes = dict(map(reversed, classes.items()))
-print(inverted_classes)
+print('binary inverted classes:', inverted_classes)
 binary_predictions = binary_model.predict(test_dataset)
 binary_predictions = tf.argmax(binary_predictions, axis=-1).numpy()
 binary_predictions = [inverted_classes[i] for i in binary_predictions]
@@ -226,7 +226,7 @@ print(test_df)
 predicted_as_dogs_df = test_df[test_df['binary_prediction'] == 'dog']
 dogs_classes = dogs_train_generator.class_indices
 dogs_inverted_classes = dict(map(reversed, dogs_classes.items()))
-print(dogs_inverted_classes)
+print('dogs inverted classes:', dogs_inverted_classes)
 
 predicted_as_dogs_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 predicted_as_dogs_generator = predicted_as_dogs_data_gen.flow_from_dataframe(dataframe=predicted_as_dogs_df,
@@ -254,7 +254,7 @@ print(predicted_as_dogs_df)
 predicted_as_cats_df = test_df[test_df['binary_prediction'] == 'cat']
 cats_classes = cats_train_generator.class_indices
 cats_inverted_classes = dict(map(reversed, cats_classes.items()))
-print(cats_inverted_classes)
+print('cats inverted classes:', cats_inverted_classes)
 
 predicted_as_cats_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 print(predicted_as_cats_df)
@@ -286,18 +286,18 @@ concat_df = pd.concat([predicted_as_dogs_df, predicted_as_cats_df])
 print(concat_df.head())
 
 binary_accuracy = len(test_df[test_df['cat/dog'] == test_df['binary_prediction']]) / len(test_df)
-print(f'Hierarchical animal binary accuracy: {binary_accuracy}')
+print(f'#RESULTS# Hierarchical animal binary accuracy: {binary_accuracy}')
 
 final_accuracy = len(concat_df[concat_df['breed'] == concat_df['breed_prediction']]) / len(concat_df)
-print(f'Hierarchical breed accuracy (out of 37): {final_accuracy}')
+print(f'#RESULTS# Hierarchical breed accuracy (out of 37): {final_accuracy}')
 
 # code falls here TODO
 dogs_breed_accuracy = len(
     predicted_as_dogs_df[predicted_as_dogs_df['breed'] == predicted_as_dogs_df['breed_prediction']]) / len(
     dogs_test_df)
-print(f'Hierarchical dogs breed accuracy (out of 25): {dogs_breed_accuracy}')
+print(f'#RESULTS# Hierarchical dogs breed accuracy (out of 25): {dogs_breed_accuracy}')
 
 cats_breed_accuracy = len(
     predicted_as_cats_df[predicted_as_cats_df['breed'] == predicted_as_cats_df['breed_prediction']]) / len(
     cats_test_df)
-print(f'Hierarchical cats breed accuracy (out of 12): {cats_breed_accuracy}')
+print(f'#RESULTS# Hierarchical cats breed accuracy (out of 12): {cats_breed_accuracy}')
