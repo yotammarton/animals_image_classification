@@ -9,6 +9,7 @@ from tensorflow.keras.applications.resnet50 import ResNet50
 import pandas as pd
 import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras.callbacks import EarlyStopping, ModelCheckpoint  # TODO added
 
 IMAGE_INPUT_NAME = 'input_1'  # if experiencing problems with this change to value of 'model.layers[0].name'
 LABEL_INPUT_NAME = 'label'
@@ -25,14 +26,13 @@ def convert_to_dictionaries(image, label):
 
 
 """LOAD DATAFRAMES"""
-df = pd.read_csv("data_advanced_model_linux.csv")
+df = pd.read_csv("data_advanced_model.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
-train_df = df[df['train/test'] == 'train']
-test_df = df[df['train/test'] == 'test']
-train_df = train_df[['path', 'cat/dog', 'breed']]
-test_df = test_df[['path', 'cat/dog', 'breed']]
+train_df = df[df['train/test'] == 'train'][['path', 'cat/dog', 'breed']]
+val_df = df[df['train/test'] == 'validation'][['path', 'cat/dog', 'breed']]  # TODO added
+test_df = df[df['train/test'] == 'test'][['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
 
 """CREATE IMAGE GENERATORS"""
@@ -40,6 +40,11 @@ train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_rang
 train_generator = train_data_gen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
                                                      class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                      batch_size=TRAIN_BATCH_SIZE)
+# TODO added
+val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path", y_col="breed",
+                                                 class_mode="categorical", target_size=INPUT_SHAPE[:2],
+                                                 batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
 
 test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
@@ -53,6 +58,13 @@ train_dataset = tf.data.Dataset.from_generator(
 # convert the dataset to the desired format of NSL (dictionaries)
 train_dataset = train_dataset.map(convert_to_dictionaries)
 
+# TODO added
+val_dataset = tf.data.Dataset.from_generator(
+    lambda: val_generator,
+    output_types=(tf.float32, tf.float32))
+val_dataset = val_dataset.map(convert_to_dictionaries)
+val_dataset = val_dataset.take(len(val_df))
+
 # same for test data
 test_dataset = tf.data.Dataset.from_generator(
     lambda: test_generator,
@@ -65,15 +77,22 @@ test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have
 model = ResNet50(weights=None, classes=num_of_classes)
 # TODO  - basically in the tutorial they didn't fit this model. the only fit() call is for the adversarial.
 
-# # test the ResNet50 model - not needed for NSL
-# model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-# print('============ fit base model ============')
-# model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-#
-# # model.save_weights('ResNet50_yotam_weights.h5')
-# print('================== inference ==================')
-# result = model.evaluate(test_dataset)  # without the .map()
-# print(dict(zip(model.metrics_names, result)))
+# test the ResNet50 model - not needed for NSL
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+checkpoint = ModelCheckpoint(filepath='nsl_weights.hdf5', verbose=1, save_best_only=True)  # TODO added
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, verbose=1)  # TODO added # TODO 'val_accuracy'?
+
+print('============ fit base model ============')
+model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
+          validation_data=val_dataset, callbacks=[checkpoint, early_stopping])  # TODO added
+
+exit()
+
+# model.save_weights('ResNet50_yotam_weights.h5')
+print('================== inference ==================')
+result = model.evaluate(test_dataset)  # without the .map()
+print(dict(zip(model.metrics_names, result)))
 
 """NSL"""
 adversarial_config = nsl.configs.make_adv_reg_config(multiplier=0.2, adv_step_size=0.2, adv_grad_norm='infinity')
@@ -160,7 +179,6 @@ DEAD CODE ISLAND
 # # that's the representation of the layer one before the last
 # layer_output = layer_function(train_dataset.__iter__().next())[0]
 
-
 # def normalize(features):
 #     features[IMAGE_INPUT_NAME] = tf.cast(
 #         features[IMAGE_INPUT_NAME], dtype=tf.float32) / 255.0
@@ -170,7 +188,6 @@ DEAD CODE ISLAND
 # def convert_to_tuples(features):
 #     return features[IMAGE_INPUT_NAME], features[LABEL_INPUT_NAME]
 
-
 # datasets = tfds.load('mnist')
 
 # mnist_train_dataset = datasets['train']
@@ -179,11 +196,9 @@ DEAD CODE ISLAND
 
 # train_dataset = mnist_train_dataset.map(normalize).shuffle(10000).batch(HPARAMS.batch_size).map(convert_to_tuples)
 
-
 # test_dataset = mnist_test_dataset.map(normalize).batch(BATCH_SIZE).map(convert_to_tuples)
 
 #
-
 
 #
 #
@@ -206,11 +221,9 @@ DEAD CODE ISLAND
 # train_set_for_adv_model = train_dataset.map(convert_to_dictionaries)
 # test_set_for_adv_model = test_dataset.map(convert_to_dictionaries)
 
-
 # flow_from_dataframe_args = [train_df, None, 'path', 'breed', None, (128, 128),
 #                   'rgb', None, 'categorical', 1, True, None, None,
 #                   '', 'png', None, 'nearest', True]
-
 
 # code for renaming layer's name - doesn't help
 # for layer in model.layers:

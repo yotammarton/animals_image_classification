@@ -139,9 +139,10 @@ def train_test_split_basic_model(df, advanced_model=False):
         for breed in set(df['breed']):
             # get the df for specific breed and shuffle it
             breed_df = df[df['breed'] == breed].sample(frac=1)
-            test_size = int(len(breed_df) * 0.3)
-            train_size = len(breed_df) - test_size
-            breed_df['train/test'] = ['test'] * test_size + ['train'] * train_size
+            test_size = int(len(breed_df) * 0.2)
+            validation_size = int(len(breed_df) * 0.1)
+            train_size = len(breed_df) - test_size - validation_size
+            breed_df['train/test'] = ['test'] * test_size + ['train'] * train_size + ['validation'] * validation_size
             if result_df is None:
                 result_df = breed_df.copy()
             else:
@@ -179,8 +180,8 @@ if __name__ == '__main__':
     # df.to_csv('data_basic_model.csv')
 
     """build the .csv for image paths for advanced"""
-    # df_oxford = oxford_cats_dogs_images()
-    # df_oxford = train_test_split_basic_model(df_oxford, advanced_model=True)
-    # df_oxford.to_csv('data_advanced_model_linux.csv')
+    df_oxford = oxford_cats_dogs_images()
+    df_oxford = train_test_split_basic_model(df_oxford, advanced_model=True)
+    df_oxford.to_csv('data_advanced_model.csv')
 
     pass

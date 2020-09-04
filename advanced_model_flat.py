@@ -17,7 +17,12 @@ print('NEW RUN FOR FLAT MODEL')
 print(f'MODEL = {model_name}')
 
 TRAIN_BATCH_SIZE = 16 if model_name == 'efficientnetb7' else 32  # TODO keep the change?
-INPUT_SHAPE = [299, 299, 3] if model_name == 'inception_v3' else [224, 224, 3]
+if model_name == 'inception_v3':
+    INPUT_SHAPE = [299, 299, 3]
+elif model_name == 'efficientnetb7':
+    INPUT_SHAPE = [600, 600, 3]
+else:
+    INPUT_SHAPE = [224, 224, 3]
 # images will be resized to this shape, this is also the dims for layers
 
 """LOAD DATAFRAMES"""
