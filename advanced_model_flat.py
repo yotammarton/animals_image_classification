@@ -139,7 +139,7 @@ elif model_name == 'densenet169':
 elif model_name == 'densenet201':
     model = DenseNet201(weights=None, classes=num_of_classes)
 else:
-    raise ValueError("not supported model name")
+    raise ValueError(f"not supported model name {model_name}")
 
 # print(model.summary())
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
