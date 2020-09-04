@@ -170,7 +170,7 @@ checkpoint = ModelCheckpoint(filepath=f'advanced_weights_binary_{model_name}.hdf
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 
 print('============ binary model fit ============')
-binary_model.fit(train_generator, epochs=2, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
+binary_model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
                  validation_data=val_dataset, callbacks=[checkpoint, early_stopping])
 binary_model.load_weights(filepath=f'advanced_weights_binary_{model_name}.hdf5')
 
@@ -180,7 +180,7 @@ dogs_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['
 checkpoint = ModelCheckpoint(filepath=f'advanced_weights_dogs_{model_name}.hdf5', verbose=1, save_best_only=True)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 print('============ dogs model fit ============')
-dogs_model.fit(dogs_train_generator, epochs=2, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
+dogs_model.fit(dogs_train_generator, epochs=100, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
                validation_data=dogs_val_dataset, callbacks=[checkpoint, early_stopping])
 dogs_model.load_weights(filepath=f'advanced_weights_dogs_{model_name}.hdf5')
 
@@ -190,7 +190,7 @@ cats_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['
 checkpoint = ModelCheckpoint(filepath=f'advanced_weights_cats_{model_name}.hdf5', verbose=1, save_best_only=True)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
 print('============ cats model fit ============')
-cats_model.fit(cats_train_generator, epochs=2, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
+cats_model.fit(cats_train_generator, epochs=100, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
                validation_data=cats_val_dataset, callbacks=[checkpoint, early_stopping])
 cats_model.load_weights(filepath=f'advanced_weights_cats_{model_name}.hdf5')
 
