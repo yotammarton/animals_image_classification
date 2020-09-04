@@ -10,6 +10,8 @@ import tensorflow as tf
 import pandas as pd
 import sys
 
+# TODO YOTAM: should fix this model according to flat
+
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""  # TODO
 # model_name = 'vgg16'  # choose your own model: 'resnet50', 'vgg16', 'vgg19', 'inception_v3', 'efficientnetb7'
 
@@ -286,18 +288,18 @@ concat_df = pd.concat([predicted_as_dogs_df, predicted_as_cats_df])
 print(concat_df.head())
 
 binary_accuracy = len(test_df[test_df['cat/dog'] == test_df['binary_prediction']]) / len(test_df)
-print(f'#RESULTS# Hierarchical animal binary accuracy: {binary_accuracy}')
+print(f'#RESULTS {model_name}# Hierarchical animal binary accuracy: {binary_accuracy}')
 
 final_accuracy = len(concat_df[concat_df['breed'] == concat_df['breed_prediction']]) / len(concat_df)
-print(f'#RESULTS# Hierarchical breed accuracy (out of 37): {final_accuracy}')
+print(f'#RESULTS {model_name}# Hierarchical breed accuracy (out of 37): {final_accuracy}')
 
 # code falls here TODO
 dogs_breed_accuracy = len(
     predicted_as_dogs_df[predicted_as_dogs_df['breed'] == predicted_as_dogs_df['breed_prediction']]) / len(
     dogs_test_df)
-print(f'#RESULTS# Hierarchical dogs breed accuracy (out of 25): {dogs_breed_accuracy}')
+print(f'#RESULTS {model_name}# Hierarchical dogs breed accuracy (out of 25): {dogs_breed_accuracy}')
 
 cats_breed_accuracy = len(
     predicted_as_cats_df[predicted_as_cats_df['breed'] == predicted_as_cats_df['breed_prediction']]) / len(
     cats_test_df)
-print(f'#RESULTS# Hierarchical cats breed accuracy (out of 12): {cats_breed_accuracy}')
+print(f'#RESULTS {model_name}# Hierarchical cats breed accuracy (out of 12): {cats_breed_accuracy}')
