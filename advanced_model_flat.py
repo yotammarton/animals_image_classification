@@ -118,7 +118,7 @@ val_dataset = val_dataset.take(len(val_df))
 
 if model_name == 'resnet50':
     model = ResNet50(weights=None, classes=num_of_classes)
-if model_name == 'resnet50v2':
+elif model_name == 'resnet50v2':
     model = ResNet50V2(weights=None, classes=num_of_classes)
 elif model_name == 'vgg16':
     model = VGG16(weights=None, classes=num_of_classes)
