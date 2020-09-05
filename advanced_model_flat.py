@@ -16,7 +16,7 @@ import pandas as pd
 import sys
 
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""
-TRAIN_BATCH_SIZE = 32
+TRAIN_BATCH_SIZE = 32 if model_name != 'xception' else 16
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
@@ -41,19 +41,17 @@ test_df = df[df['train/test'] == 'test'][['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
 
 """CREATE IMAGE GENERATORS"""
-if 'efficientnet' in model_name:
-    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
-elif model_name == 'mobilenet_v2':
+if model_name == 'mobilenet_v2':
     pre_process = preprocess_input_mobilenet_v2
-    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
-    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
-    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
 else:
     train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
@@ -61,17 +59,16 @@ else:
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
                                                     class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                     batch_size=TRAIN_BATCH_SIZE)
-if 'efficientnet' in model_name:
-    val_data_gen = ImageDataGenerator()
-elif model_name == 'mobilenet_v2':
+
+if model_name == 'mobilenet_v2':
     pre_process = preprocess_input_mobilenet_v2
-    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+    val_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
-    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+    val_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
-    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+    val_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
 else:
     val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 
@@ -79,19 +76,18 @@ val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path",
                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                  batch_size=1, shuffle=False)
 
-if 'efficientnet' in model_name:
-    test_data_gen = ImageDataGenerator()
-elif model_name == 'mobilenet_v2':
+if model_name == 'mobilenet_v2':
     pre_process = preprocess_input_mobilenet_v2
-    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+    test_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
-    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+    test_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
-    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+    test_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
 else:
     test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+
 test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
                                                    class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                    batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
