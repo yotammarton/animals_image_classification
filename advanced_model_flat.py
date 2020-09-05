@@ -1,16 +1,13 @@
 from tensorflow.keras.applications.resnet50 import ResNet50
-# tensorflow.keras.applications.resnet.preprocess_input TODO needed? shown in nightly but not in stable
 from tensorflow.keras.applications.resnet_v2 import ResNet50V2
-from tensorflow.keras.applications.vgg16 import VGG16
-from keras.applications.vgg16 import preprocess_input as preprocess_input_vgg16
-from tensorflow.keras.applications.vgg19 import VGG19
-from keras.applications.vgg19 import preprocess_input as preprocess_input_vgg19
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input as preprocess_input_inception_resnet_v2
-from tensorflow.python.keras.applications.efficientnet import EfficientNetB6, EfficientNetB7
 from tensorflow.keras.applications.densenet import DenseNet121, DenseNet169, DenseNet201
-# from tensorflow.keras.applications.densenet import preprocess_input as preprocess_input_dense TODO needed?
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input as preprocess_input_mobilenet_v2
+from tensorflow.keras.applications.xception import Xception
+from tensorflow.keras.applications.xception import preprocess_input as preprocess_input_xception
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 import numpy as np
@@ -25,14 +22,7 @@ print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
 print(f'MODEL = {model_name}')
 
-if model_name == 'inception_v3':
-    INPUT_SHAPE = [299, 299, 3]
-elif model_name == 'efficientnetb7':
-    INPUT_SHAPE = [600, 600, 3]
-    TRAIN_BATCH_SIZE = 1
-elif model_name == 'efficientnetb6':
-    INPUT_SHAPE = [528, 528, 3]
-elif model_name == 'inception_resnet_v2':
+if 'ception' in model_name:
     INPUT_SHAPE = [299, 299, 3]
 else:
     INPUT_SHAPE = [224, 224, 3]
@@ -53,50 +43,52 @@ num_of_classes = len(set(train_df['breed']))
 """CREATE IMAGE GENERATORS"""
 if 'efficientnet' in model_name:
     train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
-elif 'vgg' in model_name:
-    pre_process = preprocess_input_vgg16 if '16' in model_name else preprocess_input_vgg19
+elif model_name == 'mobilenet_v2':
+    pre_process = preprocess_input_mobilenet_v2
     train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
-# elif 'dense' in model_name:
-#     pre_process = preprocess_input_dense
-#     train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-#                                        preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
     train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
+elif model_name == 'xception':
+    pre_process = preprocess_input_xception
+    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+                                       preprocessing_function=pre_process)
 else:
     train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
                                                     class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                     batch_size=TRAIN_BATCH_SIZE)
 if 'efficientnet' in model_name:
     val_data_gen = ImageDataGenerator()
-elif 'vgg' in model_name:
-    pre_process = preprocess_input_vgg16 if '16' in model_name else preprocess_input_vgg19
+elif model_name == 'mobilenet_v2':
+    pre_process = preprocess_input_mobilenet_v2
     val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
-# elif 'dense' in model_name:
-#     pre_process = preprocess_input_dense
-#     val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
     val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+elif model_name == 'xception':
+    pre_process = preprocess_input_xception
+    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 else:
     val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+
 val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path", y_col="breed",
                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                  batch_size=1, shuffle=False)
 
 if 'efficientnet' in model_name:
     test_data_gen = ImageDataGenerator()
-elif 'vgg' in model_name:
-    pre_process = preprocess_input_vgg16 if '16' in model_name else preprocess_input_vgg19
+elif model_name == 'mobilenet_v2':
+    pre_process = preprocess_input_mobilenet_v2
     test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
-# elif 'dense' in model_name:
-#     pre_process = preprocess_input_dense
-#     test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
+    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
+elif model_name == 'xception':
+    pre_process = preprocess_input_xception
     test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 else:
     test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
@@ -120,18 +112,14 @@ if model_name == 'resnet50':
     model = ResNet50(weights=None, classes=num_of_classes)
 elif model_name == 'resnet50v2':
     model = ResNet50V2(weights=None, classes=num_of_classes)
-elif model_name == 'vgg16':
-    model = VGG16(weights=None, classes=num_of_classes)
-elif model_name == 'vgg19':
-    model = VGG19(weights=None, classes=num_of_classes)
 elif model_name == 'inception_v3':
     model = InceptionV3(weights=None, classes=num_of_classes)
+elif model_name == 'mobilenet_v2':
+    model = MobileNetV2(weights=None, classes=num_of_classes)
 elif model_name == 'inception_resnet_v2':
     model = InceptionResNetV2(weights=None, classes=num_of_classes)
-elif model_name == 'efficientnetb7':
-    model = EfficientNetB7(weights=None, classes=num_of_classes)
-elif model_name == 'efficientnetb6':
-    model = EfficientNetB6(weights=None, classes=num_of_classes)
+elif model_name == 'xception':
+    model = Xception(weights=None, classes=num_of_classes)
 elif model_name == 'densenet121':
     model = DenseNet121(weights=None, classes=num_of_classes)
 elif model_name == 'densenet169':
