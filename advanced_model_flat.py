@@ -43,15 +43,15 @@ num_of_classes = len(set(train_df['breed']))
 """CREATE IMAGE GENERATORS"""
 if model_name == 'mobilenet_v2':
     pre_process = preprocess_input_mobilenet_v2
-    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
-    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
-    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
 else:
     train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
@@ -62,13 +62,13 @@ train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="p
 
 if model_name == 'mobilenet_v2':
     pre_process = preprocess_input_mobilenet_v2
-    val_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
+    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
-    val_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
+    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
-    val_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
+    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 else:
     val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 
@@ -78,13 +78,13 @@ val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path",
 
 if model_name == 'mobilenet_v2':
     pre_process = preprocess_input_mobilenet_v2
-    test_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
+    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
-    test_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
+    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
-    test_data_gen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=pre_process)
+    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 else:
     test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
 
