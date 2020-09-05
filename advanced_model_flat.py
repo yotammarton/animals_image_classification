@@ -100,7 +100,7 @@ elif model_name == 'densenet169':
 else:
     raise ValueError(f"not supported model name {model_name}")
 
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'flat_weights_{model_name}.hdf5', verbose=1, save_best_only=True)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 
