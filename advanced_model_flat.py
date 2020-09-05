@@ -12,7 +12,7 @@ import pandas as pd
 import sys
 
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""
-TRAIN_BATCH_SIZE = 32 if model_name != 'xception' else 16
+TRAIN_BATCH_SIZE = sys.argv[2]  # 32 if model_name != 'xception' else 16
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
@@ -123,4 +123,4 @@ test_df['flat_prediction'] = inverted_class_predictions
 print(test_df)
 
 accuracy = len(test_df[test_df['breed'] == test_df['flat_prediction']]) / len(test_df)
-print(f'\n#RESULTS {model_name}# Flat Animal breed accuracy: {accuracy}')
+print(f'\n#RESULTS {model_name}# Flat Animal breed accuracy: {accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
