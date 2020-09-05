@@ -1,11 +1,7 @@
-from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.applications.resnet_v2 import ResNet50V2
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input as preprocess_input_inception_resnet_v2
-from tensorflow.keras.applications.densenet import DenseNet121, DenseNet169, DenseNet201
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
-from tensorflow.keras.applications.mobilenet_v2 import preprocess_input as preprocess_input_mobilenet_v2
+from tensorflow.keras.applications.densenet import DenseNet169
 from tensorflow.keras.applications.xception import Xception
 from tensorflow.keras.applications.xception import preprocess_input as preprocess_input_xception
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -31,7 +27,6 @@ else:
 """LOAD DATAFRAMES"""
 
 df = pd.read_csv("data_advanced_model_linux.csv")
-# df = pd.read_csv("mini_data_advanced_model.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
@@ -41,11 +36,7 @@ test_df = df[df['train/test'] == 'test'][['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
 
 """CREATE IMAGE GENERATORS"""
-if model_name == 'mobilenet_v2':
-    pre_process = preprocess_input_mobilenet_v2
-    train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-                                       preprocessing_function=pre_process)
-elif model_name == 'inception_resnet_v2':
+if model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
     train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
                                        preprocessing_function=pre_process)
@@ -60,10 +51,7 @@ train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="p
                                                     class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                     batch_size=TRAIN_BATCH_SIZE)
 
-if model_name == 'mobilenet_v2':
-    pre_process = preprocess_input_mobilenet_v2
-    val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
-elif model_name == 'inception_resnet_v2':
+if model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
     val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'xception':
@@ -76,10 +64,7 @@ val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path",
                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                  batch_size=1, shuffle=False)
 
-if model_name == 'mobilenet_v2':
-    pre_process = preprocess_input_mobilenet_v2
-    test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
-elif model_name == 'inception_resnet_v2':
+if model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
     test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 elif model_name == 'xception':
@@ -104,32 +89,20 @@ val_dataset = tf.data.Dataset.from_generator(
     output_types=(tf.float32, tf.float32))
 val_dataset = val_dataset.take(len(val_df))
 
-if model_name == 'resnet50':
-    model = ResNet50(weights=None, classes=num_of_classes)
-elif model_name == 'resnet50v2':
-    model = ResNet50V2(weights=None, classes=num_of_classes)
-elif model_name == 'inception_v3':
+if model_name == 'inception_v3':
     model = InceptionV3(weights=None, classes=num_of_classes)
-elif model_name == 'mobilenet_v2':
-    model = MobileNetV2(weights=None, classes=num_of_classes)
 elif model_name == 'inception_resnet_v2':
     model = InceptionResNetV2(weights=None, classes=num_of_classes)
 elif model_name == 'xception':
     model = Xception(weights=None, classes=num_of_classes)
-elif model_name == 'densenet121':
-    model = DenseNet121(weights=None, classes=num_of_classes)
 elif model_name == 'densenet169':
     model = DenseNet169(weights=None, classes=num_of_classes)
-elif model_name == 'densenet201':
-    model = DenseNet201(weights=None, classes=num_of_classes)
 else:
     raise ValueError(f"not supported model name {model_name}")
 
-# print(model.summary())
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'flat_weights_{model_name}.hdf5', verbose=1, save_best_only=True)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
-# TODO monitor = 'val_accuracy' / 'val_loss'
 
 print('============ fit flat model ============')
 model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
@@ -151,5 +124,3 @@ print(test_df)
 
 accuracy = len(test_df[test_df['breed'] == test_df['flat_prediction']]) / len(test_df)
 print(f'\n#RESULTS {model_name}# Flat Animal breed accuracy: {accuracy}')
-
-# test_df.to_csv('advanced_flat_model_output_test_df.zip')
