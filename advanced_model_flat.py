@@ -12,11 +12,11 @@ import pandas as pd
 import sys
 
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""
-TRAIN_BATCH_SIZE = sys.argv[2]  # 32 if model_name != 'xception' else 16
+TRAIN_BATCH_SIZE = int(sys.argv[2])  # 32 if model_name != 'xception' else 16 TODO
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
-print(f'MODEL = {model_name}')
+print(f'MODEL = {model_name}, BATCH_SIZE = {TRAIN_BATCH_SIZE}')
 
 if 'ception' in model_name:
     INPUT_SHAPE = [299, 299, 3]
