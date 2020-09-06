@@ -101,9 +101,9 @@ else:
     raise ValueError(f"not supported model name {model_name}")
 
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-checkpoint = ModelCheckpoint(filepath=f'flat_weights_{model_name}.hdf5', verbose=1, save_best_only=True)
+checkpoint = ModelCheckpoint(filepath=f'flat_weights_{model_name}.hdf5', save_best_only=True, verbose=1)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
-reduce_lr = ReduceLROnPlateau(patience=5)
+reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 
 print('============ fit flat model ============')
 model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
