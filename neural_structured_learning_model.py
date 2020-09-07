@@ -4,22 +4,28 @@ This module uses adversarial regularization from NSL (neural structured learning
 to predict the breed (flat) of the animal (a multi-class classification problem from 37 different classes)
 """
 import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
+from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input as preprocess_input_inception_resnet_v2
+from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 import neural_structured_learning as nsl
-from tensorflow.keras.applications.resnet50 import ResNet50
 import pandas as pd
 import numpy as np
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+import sys
 
 IMAGE_INPUT_NAME = 'input_1'  # if experiencing problems with this change to value of 'model.layers[0].name'
 LABEL_INPUT_NAME = 'label'
-TRAIN_BATCH_SIZE = 32
-# images will be resized to this shape by ImageDataGenerator,
-# if this shape is different from the input layer shape of 'model', model will resize also to its shape
-INPUT_SHAPE = [224, 224, 3]
 
+INPUT_SHAPE = [299, 299, 3]
+model_name = sys.argv[1] if len(sys.argv) > 1 else ""
+TRAIN_BATCH_SIZE = 32 if model_name != 'xception' else 16
+multiplier, adv_step_size, adv_grad_norm = float(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
 
-# TODO choose different shape?
+print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+print('NEW RUN FOR NSL MODEL')
+print(f'MODEL = {model_name}, BATCH_SIZE = {TRAIN_BATCH_SIZE}')
+print(f'multiplier = {multiplier},  adv_step_size = {adv_step_size}, adv_grad_norm = {adv_grad_norm}')
+
 
 def convert_to_dictionaries(image, label):
     return {IMAGE_INPUT_NAME: image, LABEL_INPUT_NAME: label}
@@ -36,20 +42,24 @@ test_df = df[df['train/test'] == 'test'][['path', 'cat/dog', 'breed']]
 num_of_classes = len(set(train_df['breed']))
 
 """CREATE IMAGE GENERATORS"""
-train_data_gen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+# TODO only good for inception_resnet_v2
+pre_process = preprocess_input_inception_resnet_v2
+train_data_gen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+                                    preprocessing_function=pre_process)
+
 train_generator = train_data_gen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
                                                      class_mode="categorical", target_size=INPUT_SHAPE[:2],
                                                      batch_size=TRAIN_BATCH_SIZE)
 
-val_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+val_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 val_generator = val_data_gen.flow_from_dataframe(dataframe=val_df, x_col="path", y_col="breed",
                                                  class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                                 batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
+                                                 batch_size=1, shuffle=False)
 
-test_data_gen = ImageDataGenerator(rescale=1. / 255)  # without augmentations
+test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 test_generator = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
                                                    class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                                   batch_size=1, shuffle=False)  # batch_size=1, shuffle=False for test!
+                                                   batch_size=1, shuffle=False)
 
 """PREPARE TENSORFLOW DATASETS FOR TRAIN, TEST"""
 train_dataset = tf.data.Dataset.from_generator(
@@ -73,43 +83,36 @@ test_dataset = test_dataset.map(convert_to_dictionaries)
 test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have shuffle=False
 
 """DEFINE BASE MODEL"""
-model = ResNet50(weights=None, classes=num_of_classes)
-# TODO  - basically in the tutorial they didn't fit this model. the only fit() call is for the adversarial.
-
-# test the ResNet50 model - not needed for NSL
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-checkpoint = ModelCheckpoint(filepath='nsl_weights.hdf5', verbose=1, save_best_only=True)
-# TODO monitor = 'val_accuracy' / 'val_loss'
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, verbose=1)
-
-print('============ fit base model ============')
-model.fit(train_generator, epochs=30, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
-          validation_data=val_dataset, callbacks=[checkpoint, early_stopping])
-
-exit()
-
-# model.save_weights('ResNet50_yotam_weights.h5')
-print('================== inference ==================')
-result = model.evaluate(test_dataset)  # without the .map()
-print(dict(zip(model.metrics_names, result)))
+model = InceptionResNetV2(weights=None, classes=num_of_classes)
 
 """NSL"""
-adversarial_config = nsl.configs.make_adv_reg_config(multiplier=0.2, adv_step_size=0.2, adv_grad_norm='infinity')
+# TODO play with parm of adversarial_config
+adversarial_config = nsl.configs.make_adv_reg_config(multiplier=multiplier,
+                                                     adv_step_size=adv_step_size,
+                                                     adv_grad_norm=adv_grad_norm)
 adversarial_model = nsl.keras.AdversarialRegularization(model, label_keys=[LABEL_INPUT_NAME],
                                                         adv_config=adversarial_config)
 
+checkpoint = ModelCheckpoint(filepath=f'nsl_weights_{model_name}_{multiplier}_{adv_step_size}_{adv_grad_norm}.hdf5',
+                             save_best_only=True, verbose=1)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
+reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 # TODO different loss?
 print('============ fit adversarial model ============')
-# every epoch we go through all the train data images
-adversarial_model.fit(train_dataset, epochs=20, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
-# TODO change, take best, add validation?
+adversarial_model.fit(train_dataset, epochs=1, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
+                      validation_data=val_dataset, callbacks=[checkpoint, early_stopping, reduce_lr])
+
+adversarial_model.load_weights(filepath=f'nsl_weights_{model_name}_{multiplier}_{adv_step_size}_{adv_grad_norm}.hdf5')
 
 print('================== inference ==================')
 # predictions = adversarial_model.predict(test_dataset)  # TODO
 result = adversarial_model.evaluate(test_dataset)
-print(dict(zip(adversarial_model.metrics_names, result)))
+print(f'#RESULTS# NSL model: {dict(zip(adversarial_model.metrics_names, result))}'
+      f'model_name: {model_name}\n'
+      f'multiplier: {multiplier}\n'
+      f'adv_step_size: {adv_step_size}'
+      f'adv_grad_norm: {adv_grad_norm}')
 
 """########################"""
 
