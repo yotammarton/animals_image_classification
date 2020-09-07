@@ -18,7 +18,7 @@ LABEL_INPUT_NAME = 'label'
 
 INPUT_SHAPE = [299, 299, 3]
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""
-TRAIN_BATCH_SIZE = 32 if model_name != 'xception' else 16
+TRAIN_BATCH_SIZE = 16
 multiplier, adv_step_size, adv_grad_norm = float(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
@@ -100,7 +100,7 @@ reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 # TODO different loss?
 print('============ fit adversarial model ============')
-adversarial_model.fit(train_dataset, epochs=1, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
+adversarial_model.fit(train_dataset, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
                       validation_data=val_dataset, callbacks=[checkpoint, early_stopping, reduce_lr])
 
 adversarial_model.load_weights(filepath=f'nsl_weights_{model_name}_{multiplier}_{adv_step_size}_{adv_grad_norm}.hdf5')
