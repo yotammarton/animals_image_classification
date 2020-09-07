@@ -7,11 +7,10 @@ Semantic segmentation >> Image classification
 """
 
 import sys
-import src.util
 import collections
 import random
 import pandas as pd
-from src.crfrnn_model import get_crfrnn_model_def
+from crfrnn_keras.crfrnn_model import get_crfrnn_model_def
 from sklearn.metrics import confusion_matrix
 
 sys.path.insert(1, './src')
