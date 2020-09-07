@@ -17,6 +17,9 @@ TRAIN_BATCH_SIZE = 32 if model_name != 'xception' else 16
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR FLAT MODEL')
 print(f'MODEL = {model_name}, BATCH_SIZE = {TRAIN_BATCH_SIZE}')
+print('\n\n\nshear_range=0.2, zoom_range=0.2, horizontal_flip=True,'
+      '\nwidth_shift_range=0.2, height_shift_range=0.2,'
+      '\nrotation_range=20, brightness_range=[0.7, 1.1],')
 
 if 'ception' in model_name:
     INPUT_SHAPE = [299, 299, 3]
@@ -39,13 +42,19 @@ num_of_classes = len(set(train_df['breed']))
 if model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
     train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+                                       width_shift_range=0.2, height_shift_range=0.2,
+                                       rotation_range=20, brightness_range=[0.7, 1.1],
                                        preprocessing_function=pre_process)
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
     train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+                                       width_shift_range=0.2, height_shift_range=0.2,
+                                       rotation_range=20, brightness_range=[0.7, 1.1],
                                        preprocessing_function=pre_process)
 else:
-    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+    train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
+                                       width_shift_range=0.2, height_shift_range=0.2,
+                                       rotation_range=20, brightness_range=[0.7, 1.1])
 
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="breed",
                                                     class_mode="categorical", target_size=INPUT_SHAPE[:2],
@@ -103,7 +112,7 @@ else:
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'flat_weights_{model_name}.hdf5', save_best_only=True, verbose=1)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
-reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
+reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)  # TODO reduce patience
 
 print('============ fit flat model ============')
 model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
