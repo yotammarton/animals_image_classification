@@ -32,7 +32,7 @@ def convert_to_dictionaries(image, label):
 
 
 """LOAD DATAFRAMES"""
-df = pd.read_csv("data_advanced_model.csv")
+df = pd.read_csv("data_advanced_model_linux.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
 
