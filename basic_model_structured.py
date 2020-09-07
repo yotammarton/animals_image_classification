@@ -10,6 +10,7 @@ import sys
 import collections
 import random
 import pandas as pd
+import crfrnn_keras
 from crfrnn_keras.crfrnn_model import get_crfrnn_model_def
 from sklearn.metrics import confusion_matrix
 
@@ -60,9 +61,9 @@ if __name__ == '__main__':
     predictions = list()
     for index, test_image in test_data.iterrows():
         path = test_image['path']
-        img_data, img_h, img_w, size = src.util.get_preprocessed_image(path)
+        img_data, img_h, img_w, size = crfrnn_keras.util.get_preprocessed_image(path)
         probs = model.predict(img_data, verbose=False)[0]
-        segmentation = src.util.get_label_image(probs, img_h, img_w, size)
+        segmentation = crfrnn_keras.util.get_label_image(probs, img_h, img_w, size)
         predictions.append(get_classification_from_segmentation(segmentation))
 
     # cm =
