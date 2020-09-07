@@ -1,12 +1,20 @@
-import sys
+"""
+Inference phase. we assume 'crfrnn_finetuned_weights.h5' in directory
+Use the segmentation from the FCN + CRF-RNN model fine tuned on our VOC, OXFORD datasets
+Convert the semantic segmentation into a classification model by extracting the class with the most pixels in an image
 
-sys.path.insert(1, './src')
-from src.crfrnn_model import get_crfrnn_model_def
-from sklearn.metrics import confusion_matrix
+Semantic segmentation >> Image classification
+"""
+
+import sys
 import src.util
 import collections
 import random
 import pandas as pd
+from src.crfrnn_model import get_crfrnn_model_def
+from sklearn.metrics import confusion_matrix
+
+sys.path.insert(1, './src')
 
 
 def get_classification_from_segmentation(segmentation_):
@@ -16,8 +24,6 @@ def get_classification_from_segmentation(segmentation_):
     :return: 'cat' / 'dog' prediction for the given segmentation
     """
     pixels = list(segmentation_.getdata())
-    # change all non-background / non-cat / non-dog >> background TODO del
-    # pixels = [p if p in [0, 8, 12] else 0 for p in pixels] TODO del
     # create a Counter based on the pixels colors
     counter = collections.Counter(pixels)
 
@@ -43,16 +49,14 @@ def get_classification_from_segmentation(segmentation_):
 
 if __name__ == '__main__':
     # load the model and the saved weights from train
-    # Download the model from https://goo.gl/ciEYZi  TODO del
-    saved_model_path = 'crfrnn_keras_model.h5'
+    finetuned_weights = 'crfrnn_finetuned_weights.h5'
 
     model = get_crfrnn_model_def()
-    model.load_weights(saved_model_path)
+    model.load_weights(finetuned_weights)
 
     # get the test data
     df = pd.read_csv('data_basic_model_linux.csv')[['path', 'cat/dog', 'breed', 'dataset', 'train/test']]
-    # test_data = df[(df['train/test'] == 'test') & (df['dataset'] == 'oxford')]  # TODO oxford only
-    test_data = df[df['dataset'] == 'oxford']
+    test_data = df[df['train/test'] == 'test']
 
     predictions = list()
     for index, test_image in test_data.iterrows():
@@ -67,15 +71,10 @@ if __name__ == '__main__':
     #       cat        |   -    |   -   |
     #       dog        |   -    |   -   |
     # Results:
-    # all data (voc + oxford)
+    # (voc + oxford)
     # [[980  20]
     #  [10 990]]
     # accuracy = 98.5%
-    # -----------------------
-    # only oxford
-    # [[2316   55]
-    #  [48 4930]]
-    # accuracy = 98.59844876853994%
-    
+
     cm = confusion_matrix(list(test_data['cat/dog']), predictions, labels=["cat", "dog"])
     print(cm)
