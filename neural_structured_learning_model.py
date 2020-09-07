@@ -95,7 +95,7 @@ adversarial_model = nsl.keras.AdversarialRegularization(model, label_keys=[LABEL
 
 checkpoint = ModelCheckpoint(filepath=f'nsl_weights_{model_name}_{multiplier}_{adv_step_size}_{adv_grad_norm}.hdf5',
                              save_best_only=True, verbose=1)
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 adversarial_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 # TODO different loss?
