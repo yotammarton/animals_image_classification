@@ -21,10 +21,7 @@ print('\n\n\nshear_range=0.2, zoom_range=0.2, horizontal_flip=True,'
       '\nwidth_shift_range=0.2, height_shift_range=0.2,'
       '\nrotation_range=20, brightness_range=[0.7, 1.1],')
 
-if 'ception' in model_name:
-    INPUT_SHAPE = [299, 299, 3]
-else:
-    INPUT_SHAPE = [224, 224, 3]
+INPUT_SHAPE = [299, 299, 3]
 # images will be resized to this shape, this is also the dims for layers
 
 """LOAD DATAFRAMES"""
@@ -112,7 +109,7 @@ else:
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 checkpoint = ModelCheckpoint(filepath=f'flat_weights_{model_name}.hdf5', save_best_only=True, verbose=1)
 early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
-reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)  # TODO reduce patience
+reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)  # TODO reduce / increase patience
 
 print('============ fit flat model ============')
 model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
