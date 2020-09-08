@@ -9,3 +9,4 @@ images
 annotations
 VOCdevkit
 /crfrnn_finetuned_weights.h5
+/weights/

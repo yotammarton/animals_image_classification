@@ -108,10 +108,10 @@ adversarial_model.load_weights(filepath=f'nsl_weights_{model_name}_{multiplier}_
 print('================== inference ==================')
 # predictions = adversarial_model.predict(test_dataset)  # TODO
 result = adversarial_model.evaluate(test_dataset)
-print(f'#RESULTS# NSL model: {dict(zip(adversarial_model.metrics_names, result))}'
+print(f'#RESULTS# NSL model: \n{dict(zip(adversarial_model.metrics_names, result))}\n'
       f'model_name: {model_name}\n'
       f'multiplier: {multiplier}\n'
-      f'adv_step_size: {adv_step_size}'
+      f'adv_step_size: {adv_step_size}\n'
       f'adv_grad_norm: {adv_grad_norm}')
 
 """########################"""
