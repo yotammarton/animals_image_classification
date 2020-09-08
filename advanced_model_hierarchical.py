@@ -291,27 +291,21 @@ cats_reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 
 """FIT MODEL"""
 print('============ binary model fit ============')
-# binary_model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
-#                  validation_data=val_dataset, callbacks=[binary_checkpoint, binary_early_stopping, binary_reduce_lr])
-binary_model.fit(train_generator, epochs=1, steps_per_epoch=1,
+binary_model.fit(train_generator, epochs=1, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
                  validation_data=val_dataset, callbacks=[binary_checkpoint, binary_early_stopping, binary_reduce_lr])
 # load the best (on validation) weights from .fit() phase
 binary_model.load_weights(filepath=f'advanced_weights_binary_{model_name}.hdf5')
 
 
 print('============ dogs model fit ============')
-# dogs_model.fit(dogs_train_generator, epochs=100, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
-#                validation_data=dogs_val_dataset, callbacks=[dogs_checkpoint, dogs_early_stopping, dogs_reduce_lr])
-dogs_model.fit(dogs_train_generator, epochs=1, steps_per_epoch=1,
+dogs_model.fit(dogs_train_generator, epochs=1, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
                validation_data=dogs_val_dataset, callbacks=[dogs_checkpoint, dogs_early_stopping, dogs_reduce_lr])
 # load the best (on validation) weights from .fit() phase
 dogs_model.load_weights(filepath=f'advanced_weights_dogs_{model_name}.hdf5')
 
 
 print('============ cats model fit ============')
-# cats_model.fit(cats_train_generator, epochs=100, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
-#                validation_data=cats_val_dataset, callbacks=[cats_checkpoint, cats_early_stopping, cats_reduce_lr])
-cats_model.fit(cats_train_generator, epochs=1, steps_per_epoch=1,
+cats_model.fit(cats_train_generator, epochs=1, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
                validation_data=cats_val_dataset, callbacks=[cats_checkpoint, cats_early_stopping, cats_reduce_lr])
 # load the best (on validation) weights from .fit() phase
 cats_model.load_weights(filepath=f'advanced_weights_cats_{model_name}.hdf5')
