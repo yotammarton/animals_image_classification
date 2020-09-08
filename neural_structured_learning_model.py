@@ -86,7 +86,7 @@ test_dataset = test_dataset.take(len(test_df))  # Note: test_generator must have
 model = InceptionResNetV2(weights=None, classes=num_of_classes)
 
 """NSL"""
-# TODO play with parm of adversarial_config
+# TODO play with parm of adv_config
 adversarial_config = nsl.configs.make_adv_reg_config(multiplier=multiplier,
                                                      adv_step_size=adv_step_size,
                                                      adv_grad_norm=adv_grad_norm)
@@ -106,7 +106,7 @@ adversarial_model.fit(train_dataset, epochs=100, steps_per_epoch=np.ceil(len(tra
 adversarial_model.load_weights(filepath=f'nsl_weights_{model_name}_{multiplier}_{adv_step_size}_{adv_grad_norm}.hdf5')
 
 print('================== inference ==================')
-# predictions = adversarial_model.predict(test_dataset)  # TODO
+# predictions = adv_model.predict(test_dataset)  # TODO
 result = adversarial_model.evaluate(test_dataset)
 print(f'#RESULTS# NSL model: \n{dict(zip(adversarial_model.metrics_names, result))}\n'
       f'model_name: {model_name}\n'
