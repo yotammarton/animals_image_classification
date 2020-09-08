@@ -33,7 +33,6 @@ print('\n\n\nshear_range=0.2, zoom_range=0.2, horizontal_flip=True,'
 INPUT_SHAPE = [299, 299, 3]
 
 """LOAD DATAFRAMES"""
-
 df = pd.read_csv("data_advanced_model_linux.csv")
 df['cat/dog'] = df['cat/dog'].astype(str)
 df['breed'] = df['breed'].astype(str)
@@ -130,9 +129,7 @@ model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / T
 model.load_weights(filepath=f'flat_weights_{model_name}.hdf5')
 
 print('============ predict flat model ============')
-# Let’s have a look at the unique categories in the training data
 classes = train_generator.class_indices
-# We will use a reverse of the above dictionary to later convert the predictions to actual classes
 inverted_classes = dict(map(reversed, classes.items()))
 print(inverted_classes)
 predictions = model.predict(test_dataset)

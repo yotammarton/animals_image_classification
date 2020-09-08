@@ -141,6 +141,7 @@ def main():
                 sift = extract_SIFT(i)
                 sift_features.append(sift)
 
+                
                 set_type.append(set_type_)
                 labels.append(label)
 
