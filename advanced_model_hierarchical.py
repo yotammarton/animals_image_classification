@@ -3,9 +3,9 @@ train and evaluate hierarchical classification models: first binary classificati
  according to the predict animal in the first binary model (1 out of 12 / 1 out of 25)
 
 ### Usage:
-python advanced_model_flat.py inception_v3
-or: python advanced_model_flat.py inception_resnet_v2
-or: python advanced_model_flat.py xception
+python advanced_model_hierarchical.py inception_v3
+or: python advanced_model_hierarchical.py inception_resnet_v2
+or: python advanced_model_hierarchical.py xception
 """
 
 from tensorflow.keras.applications.inception_v3 import InceptionV3
@@ -67,15 +67,15 @@ if model_name == 'inception_resnet_v2':
                                        preprocessing_function=pre_process)
     # dogs model #
     dogs_train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-                                       width_shift_range=0.2, height_shift_range=0.2,
-                                       rotation_range=20, brightness_range=[0.7, 1.1],
-                                       preprocessing_function=pre_process)
+                                            width_shift_range=0.2, height_shift_range=0.2,
+                                            rotation_range=20, brightness_range=[0.7, 1.1],
+                                            preprocessing_function=pre_process)
 
     # cats model #
     cats_train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-                                       width_shift_range=0.2, height_shift_range=0.2,
-                                       rotation_range=20, brightness_range=[0.7, 1.1],
-                                       preprocessing_function=pre_process)
+                                            width_shift_range=0.2, height_shift_range=0.2,
+                                            rotation_range=20, brightness_range=[0.7, 1.1],
+                                            preprocessing_function=pre_process)
 
 elif model_name == 'xception':
     pre_process = preprocess_input_xception
@@ -87,15 +87,15 @@ elif model_name == 'xception':
                                        preprocessing_function=pre_process)
     # dogs model #
     dogs_train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-                                       width_shift_range=0.2, height_shift_range=0.2,
-                                       rotation_range=20, brightness_range=[0.7, 1.1],
-                                       preprocessing_function=pre_process)
+                                            width_shift_range=0.2, height_shift_range=0.2,
+                                            rotation_range=20, brightness_range=[0.7, 1.1],
+                                            preprocessing_function=pre_process)
 
     # cats model #
     cats_train_dataGen = ImageDataGenerator(shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-                                       width_shift_range=0.2, height_shift_range=0.2,
-                                       rotation_range=20, brightness_range=[0.7, 1.1],
-                                       preprocessing_function=pre_process)
+                                            width_shift_range=0.2, height_shift_range=0.2,
+                                            rotation_range=20, brightness_range=[0.7, 1.1],
+                                            preprocessing_function=pre_process)
 
 else:  # inception_v3
     # binary model #
@@ -104,13 +104,12 @@ else:  # inception_v3
                                        rotation_range=20, brightness_range=[0.7, 1.1])
     # dogs model #
     dogs_train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-                                       width_shift_range=0.2, height_shift_range=0.2,
-                                       rotation_range=20, brightness_range=[0.7, 1.1])
+                                            width_shift_range=0.2, height_shift_range=0.2,
+                                            rotation_range=20, brightness_range=[0.7, 1.1])
     # cats model #
     cats_train_dataGen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True,
-                                       width_shift_range=0.2, height_shift_range=0.2,
-                                       rotation_range=20, brightness_range=[0.7, 1.1])
-
+                                            width_shift_range=0.2, height_shift_range=0.2,
+                                            rotation_range=20, brightness_range=[0.7, 1.1])
 
 # binary model #
 train_generator = train_dataGen.flow_from_dataframe(dataframe=train_df, x_col="path", y_col="cat/dog",
@@ -266,12 +265,13 @@ elif model_name == 'xception':
 else:
     raise ValueError(f"not supported model name {model_name}")
 
-
 """MODEL PARAMS AND CALLBACKS"""
 # binary model #
 # print(binary_model.summary())
-binary_model.compile(optimizer='adam', loss='BinaryCrossentropy', metrics=['accuracy']) # TODO maybe loss='categorical_crossentropy'?
-binary_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_binary_{model_name}.hdf5', save_best_only=True, verbose=1)
+binary_model.compile(optimizer='adam', loss='BinaryCrossentropy',
+                     metrics=['accuracy'])  # TODO maybe loss='categorical_crossentropy'?
+binary_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_binary_{model_name}.hdf5', save_best_only=True,
+                                    verbose=1)
 binary_early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 binary_reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 
@@ -296,13 +296,11 @@ binary_model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_
 # load the best (on validation) weights from .fit() phase
 binary_model.load_weights(filepath=f'advanced_weights_binary_{model_name}.hdf5')
 
-
 print('============ dogs model fit ============')
 dogs_model.fit(dogs_train_generator, epochs=100, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
                validation_data=dogs_val_dataset, callbacks=[dogs_checkpoint, dogs_early_stopping, dogs_reduce_lr])
 # load the best (on validation) weights from .fit() phase
 dogs_model.load_weights(filepath=f'advanced_weights_dogs_{model_name}.hdf5')
-
 
 print('============ cats model fit ============')
 cats_model.fit(cats_train_generator, epochs=100, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
@@ -337,14 +335,10 @@ binary_predictions = [inverted_classes[i] for i in binary_predictions]
 test_df['binary_prediction'] = binary_predictions
 print(test_df)
 
-
 """BREED MODELS"""
 
 # dog breed prediction #
 predicted_as_dogs_df = test_df[test_df['binary_prediction'] == 'dog']
-dogs_classes = dogs_train_generator.class_indices
-dogs_inverted_classes = dict(map(reversed, dogs_classes.items()))
-print('dogs inverted classes:', dogs_inverted_classes)
 
 if model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
@@ -362,6 +356,9 @@ predicted_as_dogs_generator = predicted_as_dogs_data_gen.flow_from_dataframe(dat
                                                                              target_size=INPUT_SHAPE[:2],
                                                                              batch_size=1,
                                                                              shuffle=False)
+dogs_classes = predicted_as_dogs_generator.class_indices
+dogs_inverted_classes = dict(map(reversed, dogs_classes.items()))
+print('dogs inverted classes:', dogs_inverted_classes)
 
 predicted_as_dogs_dataset = tf.data.Dataset.from_generator(
     lambda: predicted_as_dogs_generator,
@@ -378,9 +375,6 @@ print(predicted_as_dogs_df)
 
 # cat breed prediction #
 predicted_as_cats_df = test_df[test_df['binary_prediction'] == 'cat']
-cats_classes = cats_train_generator.class_indices
-cats_inverted_classes = dict(map(reversed, cats_classes.items()))
-print('cats inverted classes:', cats_inverted_classes)
 
 if model_name == 'inception_resnet_v2':
     pre_process = preprocess_input_inception_resnet_v2
@@ -398,6 +392,9 @@ predicted_as_cats_generator = predicted_as_cats_data_gen.flow_from_dataframe(dat
                                                                              target_size=INPUT_SHAPE[:2],
                                                                              batch_size=1,
                                                                              shuffle=False)
+cats_classes = predicted_as_cats_generator.class_indices
+cats_inverted_classes = dict(map(reversed, cats_classes.items()))
+print('cats inverted classes:', cats_inverted_classes)
 
 predicted_as_cats_dataset = tf.data.Dataset.from_generator(
     lambda: predicted_as_cats_generator,
@@ -421,14 +418,17 @@ binary_accuracy = len(test_df[test_df['cat/dog'] == test_df['binary_prediction']
 print(f'#RESULTS {model_name}# Hierarchical animal binary accuracy: {binary_accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
 
 final_accuracy = len(concat_df[concat_df['breed'] == concat_df['breed_prediction']]) / len(concat_df)
-print(f'#RESULTS {model_name}# Hierarchical breed accuracy (out of 37): {final_accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
+print(
+    f'#RESULTS {model_name}# Hierarchical breed accuracy (out of 37): {final_accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
 
 dogs_breed_accuracy = \
     len(predicted_as_dogs_df[predicted_as_dogs_df['breed'] == predicted_as_dogs_df['breed_prediction']]) / \
     len(dogs_test_df)
-print(f'#RESULTS {model_name}# Hierarchical dogs breed accuracy (out of 25): {dogs_breed_accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
+print(f'#RESULTS {model_name}# Hierarchical dogs breed accuracy (out of 25):'
+      f' {dogs_breed_accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
 
 cats_breed_accuracy = \
     len(predicted_as_cats_df[predicted_as_cats_df['breed'] == predicted_as_cats_df['breed_prediction']]) / \
     len(cats_test_df)
-print(f'#RESULTS {model_name}# Hierarchical cats breed accuracy (out of 12): {cats_breed_accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
+print(f'#RESULTS {model_name}# Hierarchical cats breed accuracy (out of 12):'
+      f' {cats_breed_accuracy}. Batchsize: {TRAIN_BATCH_SIZE}')
