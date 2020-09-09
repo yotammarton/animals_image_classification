@@ -22,7 +22,7 @@ import sys
 
 model_name = sys.argv[1] if len(sys.argv) > 1 else ""
 # model_name = 'xception'
-TRAIN_BATCH_SIZE = 16 if model_name == 'xception' else 32
+TRAIN_BATCH_SIZE = 32 if model_name == 'inception_v3' else 16
 
 print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 print('NEW RUN FOR HIERARCHICAL MODEL')
