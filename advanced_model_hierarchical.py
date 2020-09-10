@@ -268,45 +268,42 @@ else:
 # binary model #
 # print(binary_model.summary())
 binary_model.compile(optimizer='adam', loss='BinaryCrossentropy',
-                     metrics=['accuracy'])  # TODO maybe loss='categorical_crossentropy'?
-# binary_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_binary_{model_name}.hdf5', save_best_only=True,
-#                                     verbose=1)
+                     metrics=['accuracy'])
+binary_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_binary_{model_name}.hdf5', save_best_only=True,
+                                    verbose=1)
 binary_early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 binary_reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 
 # dogs model #
 # print(dogs_model.summary())
 dogs_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-# dogs_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_dogs_{model_name}.hdf5', save_best_only=True, verbose=1)
+dogs_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_dogs_{model_name}.hdf5', save_best_only=True, verbose=1)
 dogs_early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 dogs_reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 
 # cats model #
 # print(cats_model.summary())
 cats_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-# cats_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_cats_{model_name}.hdf5', save_best_only=True, verbose=1)
+cats_checkpoint = ModelCheckpoint(filepath=f'advanced_weights_cats_{model_name}.hdf5', save_best_only=True, verbose=1)
 cats_early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, verbose=1)
 cats_reduce_lr = ReduceLROnPlateau(patience=5, verbose=1)
 
 """FIT MODEL"""
 print('============ binary model fit ============')
-# binary_model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
-#                  validation_data=val_dataset, callbacks=[binary_checkpoint, binary_early_stopping, binary_reduce_lr])
-binary_model.fit(train_generator, epochs=1, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE))
+binary_model.fit(train_generator, epochs=100, steps_per_epoch=np.ceil(len(train_df) / TRAIN_BATCH_SIZE),
+                 validation_data=val_dataset, callbacks=[binary_checkpoint, binary_early_stopping, binary_reduce_lr])
 # load the best (on validation) weights from .fit() phase
 binary_model.load_weights(filepath=f'advanced_weights_binary_{model_name}.hdf5')
 
 print('============ dogs model fit ============')
-# dogs_model.fit(dogs_train_generator, epochs=100, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
-#                validation_data=dogs_val_dataset, callbacks=[dogs_checkpoint, dogs_early_stopping, dogs_reduce_lr])
-dogs_model.fit(dogs_train_generator, epochs=1, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE))
+dogs_model.fit(dogs_train_generator, epochs=100, steps_per_epoch=np.ceil(len(dogs_train_df) / TRAIN_BATCH_SIZE),
+               validation_data=dogs_val_dataset, callbacks=[dogs_checkpoint, dogs_early_stopping, dogs_reduce_lr])
 # load the best (on validation) weights from .fit() phase
 dogs_model.load_weights(filepath=f'advanced_weights_dogs_{model_name}.hdf5')
 
 print('============ cats model fit ============')
-# cats_model.fit(cats_train_generator, epochs=100, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
-#                validation_data=cats_val_dataset, callbacks=[cats_checkpoint, cats_early_stopping, cats_reduce_lr])
-cats_model.fit(cats_train_generator, epochs=1, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE))
+cats_model.fit(cats_train_generator, epochs=100, steps_per_epoch=np.ceil(len(cats_train_df) / TRAIN_BATCH_SIZE),
+               validation_data=cats_val_dataset, callbacks=[cats_checkpoint, cats_early_stopping, cats_reduce_lr])
 # load the best (on validation) weights from .fit() phase
 cats_model.load_weights(filepath=f'advanced_weights_cats_{model_name}.hdf5')
 
@@ -358,7 +355,7 @@ predicted_as_dogs_generator = predicted_as_dogs_data_gen.flow_from_dataframe(dat
                                                                              target_size=INPUT_SHAPE[:2],
                                                                              batch_size=1,
                                                                              shuffle=False)
-dogs_classes = predicted_as_dogs_generator.class_indices
+dogs_classes = dogs_train_generator.class_indices  # super important to take the classes from train!
 dogs_inverted_classes = dict(map(reversed, dogs_classes.items()))
 print('dogs inverted classes:', dogs_inverted_classes)
 
@@ -394,7 +391,8 @@ predicted_as_cats_generator = predicted_as_cats_data_gen.flow_from_dataframe(dat
                                                                              target_size=INPUT_SHAPE[:2],
                                                                              batch_size=1,
                                                                              shuffle=False)
-cats_classes = predicted_as_cats_generator.class_indices
+
+cats_classes = cats_train_generator.class_indices  # super important to take the classes from train!
 cats_inverted_classes = dict(map(reversed, cats_classes.items()))
 print('cats inverted classes:', cats_inverted_classes)
 
