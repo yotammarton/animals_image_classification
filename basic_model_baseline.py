@@ -62,17 +62,17 @@ def Classify(features, set_type, labels):
     # print(f'number of train featuers: {len(train_features)} and train labels: {len(train_labels)}')
     # print(f'number of test featuers: {len(test_features)} and test labels: {len(test_labels)}')
 
-    acc, k = KNN(3, train_features, train_labels, test_features, test_labels)
-    print(f'    {k}NN - accuracy: {(round(acc*100, 4))}')
+    # acc, k = KNN(3, train_features, train_labels, test_features, test_labels)
+    # print(f'    {k}NN - accuracy: {(round(acc*100, 4))}')
 
-    acc = SVM(train_features, train_labels, test_features, test_labels)
+    acc = SVM(train_features, train_labels, test_features, test_labels, c_of_svm)
     print(f'    SVM - accuracy: {(round(acc*100, 4))}')
 
-    acc = neural_network_MLP(train_features, train_labels, test_features, test_labels)
-    print(f'    Neural Network MLP - accuracy: {(round(acc*100, 4))}\n')
+    # acc = neural_network_MLP(train_features, train_labels, test_features, test_labels)
+    # print(f'    Neural Network MLP - accuracy: {(round(acc*100, 4))}\n')
 
-    acc = neural_network_MLP_ours(train_features, train_labels, test_features, test_labels)
-    print(f'    Neural Network MLP ours - accuracy: {(round(acc * 100, 4))}\n')
+    # acc = neural_network_MLP_ours(train_features, train_labels, test_features, test_labels)
+    # print(f'    Neural Network MLP ours - accuracy: {(round(acc * 100, 4))}\n')
 
 
 def KNN(k, train_data, train_labels, test_data, test_labels):
@@ -82,8 +82,8 @@ def KNN(k, train_data, train_labels, test_data, test_labels):
     return acc, k
 
 
-def SVM(train_data, train_labels, test_data, test_labels):
-    model = SVC(max_iter=1000, class_weight='balanced', gamma='scale')
+def SVM(train_data, train_labels, test_data, test_labels, c_of_svm):
+    model = SVC(C=c_of_svm, max_iter=1000, class_weight='balanced', gamma='scale')
     model.fit(train_data, train_labels)
     acc = model.score(test_data, test_labels)
     return acc
@@ -105,7 +105,7 @@ def neural_network_MLP_ours(train_data, train_labels, test_data, test_labels):
     return acc
 
 
-def main():
+def main(c_of_svm):
     print("[INFO handling images...]")
     rawImages, color_hist, sift_features, set_type, labels = [], [], [], [], []
     df = pd.read_csv('data_basic_model_linux.csv')
@@ -181,4 +181,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(0.2)
+    main(0.5)
+    main(2)

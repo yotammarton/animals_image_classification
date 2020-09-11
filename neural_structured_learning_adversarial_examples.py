@@ -121,7 +121,7 @@ for k, batch in enumerate(test_dataset):
     perturbed_batch = reference_model.perturb_on_batch(batch)
 
     # Clipping makes perturbed examples have the same range as regular ones.
-    # (!!) super important to clip to the same original values that the orignal features had
+    # (!!) super important to clip to the same original values that the original features had
     perturbed_batch[IMAGE_INPUT_NAME] = tf.clip_by_value(
         perturbed_batch[IMAGE_INPUT_NAME], -1.0, 1.0)
     y_true = perturbed_batch.pop(LABEL_INPUT_NAME)
