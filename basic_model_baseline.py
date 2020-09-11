@@ -52,7 +52,7 @@ def extract_SIFT(image, num_of_features=30):
     return descriptors.flatten()
 
 
-def Classify(features, set_type, labels):
+def Classify(features, set_type, labels, c_of_svm):
     # print(set_type)
     train_features = [feature for index, feature in enumerate(features) if set_type[index] == 'train']
     test_features = [feature for index, feature in enumerate(features) if set_type[index] == 'test']
@@ -163,21 +163,21 @@ def main(c_of_svm):
     print()
 
     print("Evaluating raw pixel accuracy...")
-    Classify(rawImages, set_type, labels)
+    Classify(rawImages, set_type, labels, c_of_svm)
 
     print("Evaluating color histogram accuracy...")
-    Classify(color_hist, set_type, labels)
+    Classify(color_hist, set_type, labels, c_of_svm)
 
     print("Evaluating SIFT accuracy...")
-    Classify(sift_features, set_type, labels)
+    Classify(sift_features, set_type, labels, c_of_svm)
 
     print("Evaluating raw pixels & color histogram accuracy...")
     raw_and_hist = np.concatenate((rawImages, color_hist), axis=1)
-    Classify(raw_and_hist, set_type, labels)
+    Classify(raw_and_hist, set_type, labels, c_of_svm)
 
     print("Evaluating raw pixels & color histogram & sift accuracy...")
     raw_and_hist_sift = np.concatenate((np.concatenate((rawImages, color_hist), axis=1), sift_features), axis=1)
-    Classify(raw_and_hist_sift, set_type, labels)
+    Classify(raw_and_hist_sift, set_type, labels, c_of_svm)
 
 
 if __name__ == '__main__':
