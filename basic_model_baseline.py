@@ -106,6 +106,8 @@ def neural_network_MLP_ours(train_data, train_labels, test_data, test_labels):
 
 
 def main(c_of_svm):
+    print(f'c_of_svm={c_of_svm}')
+
     print("[INFO handling images...]")
     rawImages, color_hist, sift_features, set_type, labels = [], [], [], [], []
     df = pd.read_csv('data_basic_model_linux.csv')
@@ -141,7 +143,7 @@ def main(c_of_svm):
                 sift = extract_SIFT(i)
                 sift_features.append(sift)
 
-                
+
                 set_type.append(set_type_)
                 labels.append(label)
 
