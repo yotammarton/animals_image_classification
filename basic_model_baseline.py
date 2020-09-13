@@ -183,6 +183,5 @@ def main(c_of_svm):
 
 
 if __name__ == '__main__':
-    main(0.2)
-    main(0.5)
-    main(2)
+    main(0.05)
+    main(0.1)
