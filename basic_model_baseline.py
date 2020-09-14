@@ -59,11 +59,11 @@ def Classify(features, set_type, labels, c_of_svm):
     train_labels = [label for index, label in enumerate(labels) if set_type[index] == 'train']
     test_labels = [label for index, label in enumerate(labels) if set_type[index] == 'test']
 
-    # print(f'number of train featuers: {len(train_features)} and train labels: {len(train_labels)}')
-    # print(f'number of test featuers: {len(test_features)} and test labels: {len(test_labels)}')
+    print(f'number of train featuers: {len(train_features)} and train labels: {len(train_labels)}')
+    print(f'number of test featuers: {len(test_features)} and test labels: {len(test_labels)}')
 
-    # acc, k = KNN(3, train_features, train_labels, test_features, test_labels)
-    # print(f'    {k}NN - accuracy: {(round(acc*100, 4))}')
+    acc, k = KNN(3, train_features, train_labels, test_features, test_labels)
+    print(f'    {k}NN - accuracy: {(round(acc*100, 4))}')
 
     acc = SVM(train_features, train_labels, test_features, test_labels, c_of_svm)
     print(f'    SVM - accuracy: {(round(acc*100, 4))}')
@@ -110,6 +110,7 @@ def main(c_of_svm):
 
     print("[INFO handling images...]")
     rawImages, color_hist, sift_features, set_type, labels = [], [], [], [], []
+    # df = pd.read_csv('mini_data_basic_model.csv')
     df = pd.read_csv('data_basic_model_linux.csv')
     df = df.drop(['Unnamed: 0'], axis=1)
 
@@ -135,12 +136,14 @@ def main(c_of_svm):
 
             for i in images:
                 pixels = image_to_feature_vector(i)
+                pixels = pixels/255.0
                 rawImages.append(pixels)
 
                 hist = extract_color_histogram(i)
                 color_hist.append(hist)
 
                 sift = extract_SIFT(i)
+
                 sift_features.append(sift)
 
 
@@ -160,8 +163,22 @@ def main(c_of_svm):
         np.array(rawImages), np.array(color_hist), np.array(labels), np.array(set_type), np.array(sift_features)
 
     print(f'color_hist.shape:{color_hist.shape}')
+    # print(f'color_hist:{color_hist}')
+    print(f'min color_hist:{color_hist.min()}')
+    print(f'max color_hist:{color_hist.max()}')
     print(f'rawImages.shape:{rawImages.shape}')
+    # print(f'rawImages:{rawImages}')
+    print(f'min rawImages:{rawImages.min()}')
+    print(f'max rawImages:{rawImages.max()}')
     print(f'sift_features.shape:{sift_features.shape}')
+    # print(f'sift_features:{sift_features}')
+    # print(f'min sift_features:{sift_features.min()}')
+    # print(f'max sift_features:{sift_features.max()}')
+    sift_features = sift_features/sift_features.max()
+    # print(f'sift_features:{sift_features}')
+    print(f'min sift_features:{sift_features.min()}')
+    print(f'max sift_features:{sift_features.max()}')
+
     print()
 
     print("Evaluating raw pixel accuracy...")
@@ -183,5 +200,6 @@ def main(c_of_svm):
 
 
 if __name__ == '__main__':
-    main(0.05)
-    main(0.1)
+    main(0.2)
+    main(0.5)
+    main(2)
