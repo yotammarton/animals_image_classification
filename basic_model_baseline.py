@@ -105,7 +105,7 @@ def neural_network_MLP_ours(train_data, train_labels, test_data, test_labels):
     return acc
 
 
-for c_of_svm in [0.2, 0.5, 1, 2]
+for c_of_svm in [0.2, 0.5, 1, 2]:
     print(f'c_of_svm={c_of_svm}')
 
     print("[INFO handling images...]")
