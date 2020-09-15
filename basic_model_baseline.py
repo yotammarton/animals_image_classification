@@ -105,13 +105,13 @@ def neural_network_MLP_ours(train_data, train_labels, test_data, test_labels):
     return acc
 
 
-def main(c_of_svm):
+def main(c_of_svm=1):
     print(f'c_of_svm={c_of_svm}')
 
     print("[INFO handling images...]")
     rawImages, color_hist, sift_features, set_type, labels = [], [], [], [], []
-    # df = pd.read_csv('mini_data_basic_model.csv')
-    df = pd.read_csv('data_basic_model_linux.csv')
+    df = pd.read_csv('mini_data_basic_model.csv')
+    # df = pd.read_csv('data_basic_model_linux.csv')
     df = df.drop(['Unnamed: 0'], axis=1)
 
     for index, row in df.iterrows():
@@ -143,9 +143,7 @@ def main(c_of_svm):
                 color_hist.append(hist)
 
                 sift = extract_SIFT(i)
-
                 sift_features.append(sift)
-
 
                 set_type.append(set_type_)
                 labels.append(label)
@@ -200,6 +198,7 @@ def main(c_of_svm):
 
 
 if __name__ == '__main__':
-    main(0.2)
-    main(0.5)
-    main(2)
+    main()
+    # main(0.2)
+    # main(0.5)
+    # main(2)
