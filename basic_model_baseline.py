@@ -105,7 +105,7 @@ def neural_network_MLP_ours(train_data, train_labels, test_data, test_labels):
     return acc
 
 
-def main(c_of_svm=1):
+for c_of_svm in [0.2, 0.5, 1, 2]
     print(f'c_of_svm={c_of_svm}')
 
     print("[INFO handling images...]")
@@ -195,10 +195,3 @@ def main(c_of_svm=1):
     print("Evaluating raw pixels & color histogram & sift accuracy...")
     raw_and_hist_sift = np.concatenate((np.concatenate((rawImages, color_hist), axis=1), sift_features), axis=1)
     Classify(raw_and_hist_sift, set_type, labels, c_of_svm)
-
-
-if __name__ == '__main__':
-    main()
-    # main(0.2)
-    # main(0.5)
-    # main(2)
