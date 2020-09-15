@@ -110,8 +110,8 @@ def main(c_of_svm=1):
 
     print("[INFO handling images...]")
     rawImages, color_hist, sift_features, set_type, labels = [], [], [], [], []
-    df = pd.read_csv('mini_data_basic_model.csv')
-    # df = pd.read_csv('data_basic_model_linux.csv')
+    # df = pd.read_csv('mini_data_basic_model.csv')
+    df = pd.read_csv('data_basic_model_linux.csv')
     df = df.drop(['Unnamed: 0'], axis=1)
 
     for index, row in df.iterrows():
