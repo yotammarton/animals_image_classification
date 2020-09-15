@@ -48,7 +48,7 @@ def extract_SIFT(image, num_of_features=30):
     elif len(key_points) < num_of_features:
         # key_points = [0]*num_of_features  # TODO this is not the right type. but it will not be used
         descriptors = np.zeros((num_of_features, 128))
-        print(f'attention, only {len(key_points)} SIFT-key-points')
+        # print(f'attention, only {len(key_points)} SIFT-key-points')
     return descriptors.flatten()
 
 
@@ -149,7 +149,7 @@ for c_of_svm in [0.2, 0.5, 1, 2]:
                 labels.append(label)
 
         # show an update every 1000 images until the last image
-        if index > 0 and ((index + 1) % 1000 == 0 or index == len(df) - 1):
+        if index > 0 and ((index + 1) % 3000 == 0 or index == len(df) - 1):
             print("[images processed {}/{}]".format(index + 1, len(df)))
             # plt.imshow(image)
             # plt.show()
