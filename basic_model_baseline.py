@@ -36,7 +36,7 @@ def extract_color_histogram(image, bins=(32, 32, 32)):
 
 
 def extract_SIFT(image, num_of_features=30):
-    image = cv2.resize(image, (150, 150))  ## TODO change?
+    image = cv2.resize(image, (150, 150))
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     sift = cv2.xfeatures2d.SIFT_create(nfeatures=num_of_features)
     key_points, descriptors = sift.detectAndCompute(gray, None)  # None is for no-mask
@@ -48,7 +48,6 @@ def extract_SIFT(image, num_of_features=30):
         # plt.imshow(sift_image)
         # plt.show()
     elif len(key_points) < num_of_features:
-        # key_points = [0]*num_of_features  # TODO this is not the right type. but it will not be used
         descriptors = np.zeros((num_of_features, 128))
         # print(f'attention, only {len(key_points)} SIFT-key-points')
     return descriptors.flatten()
@@ -58,8 +57,10 @@ def Classify(features, set_type, labels, c_of_svm):
     # print(set_type)
     train_features = [feature for index, feature in enumerate(features) if set_type[index] == 'train']
     test_features = [feature for index, feature in enumerate(features) if set_type[index] == 'test']
+    validation_features = [feature for index, feature in enumerate(features) if set_type[index] == 'validation']
     train_labels = [label for index, label in enumerate(labels) if set_type[index] == 'train']
     test_labels = [label for index, label in enumerate(labels) if set_type[index] == 'test']
+    validation_labels = [label for index, label in enumerate(labels) if set_type[index] == 'validation']
 
     print(f'number of train featuers: {len(train_features)} and train labels: {len(train_labels)}')
     print(f'number of test featuers: {len(test_features)} and test labels: {len(test_labels)}')
@@ -86,22 +87,6 @@ def KNN(k, train_data, train_labels, test_data, test_labels):
 
 def SVM(train_data, train_labels, test_data, test_labels, c_of_svm):
     model = SVC(C=c_of_svm, max_iter=1000, class_weight='balanced', gamma='scale')
-    model.fit(train_data, train_labels)
-    acc = model.score(test_data, test_labels)
-    return acc
-
-
-def neural_network_MLP(train_data, train_labels, test_data, test_labels):
-    model = MLPClassifier(hidden_layer_sizes=(50,), max_iter=1000, alpha=1e-4,
-                          solver='sgd', tol=1e-4, random_state=1,
-                          learning_rate_init=.1)
-    model.fit(train_data, train_labels)
-    acc = model.score(test_data, test_labels)
-    return acc
-
-
-def neural_network_MLP_ours(train_data, train_labels, test_data, test_labels):
-    model = MLPClassifier()
     model.fit(train_data, train_labels)
     acc = model.score(test_data, test_labels)
     return acc

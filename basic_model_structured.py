@@ -1,5 +1,5 @@
 """
-Inference phase. we assume 'crfrnn_finetuned_weights.h5' in directory
+Inference phase structured model. we assume 'crfrnn_finetuned_weights.h5' in directory
 Use the segmentation from the FCN + CRF-RNN model fine tuned on our VOC, OXFORD datasets
 Convert the semantic segmentation into a classification model by extracting the class with the most pixels in an image
 

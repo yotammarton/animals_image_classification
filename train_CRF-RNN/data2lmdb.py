@@ -25,7 +25,7 @@ def main():
     label_ext = '.png'
     ##
 
-    labels_path, train_list, test_list = process_arguments(sys.argv)
+    labels_path, train_list, test_list, validation_list = process_arguments(sys.argv)
 
     if train_list != None:  # all classes in dataset defined using txt files
         class_ids = range(1, 21)
@@ -217,6 +217,7 @@ def process_arguments(argv):
     new_labels_path = None
     train_list = None
     test_list = None
+    validation_list = None
 
     if len(argv) == 2:  # different path to labels
         new_labels_path = argv[1]
@@ -226,7 +227,7 @@ def process_arguments(argv):
     elif len(argv) > 3:
         help()
 
-    return new_labels_path, train_list, test_list
+    return new_labels_path, train_list, test_list, validation_list
 
 
 def help():

@@ -44,7 +44,7 @@ def interp_surgery(net, layers):
 
 
 # basic pre-trained weights
-base_weights = 'fcn-8s-pascal.caffemodel'  # https://gist.github.com/longjon/1bf3aa1e0b8e788d7e1d
+base_weights = 'fcn-8s-pascal.caffemodel'
 # define the optimizer
 solver = caffe.SGDSolver('solver.prototxt')
 

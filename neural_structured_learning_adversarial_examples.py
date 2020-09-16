@@ -23,7 +23,7 @@ IMAGE_INPUT_NAME = 'input_1'  # if experiencing problems with this change to val
 LABEL_INPUT_NAME = 'label'
 
 INPUT_SHAPE = [299, 299, 3]
-SEED = 30
+SEED = 987  # or 65
 BATCH_SIZE = 8  # just for the demonstration
 NUMBER_OF_BATCHES = 1  # just for the demonstration. number of batches we will perturb on (in the bottom of this script)
 # configuration for adversarial model
@@ -75,13 +75,13 @@ pre_process = preprocess_input_inception_resnet_v2
 test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 test_generator_2 = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
                                                      class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                                     batch_size=BATCH_SIZE, shuffle=True, seed=SEED)
+                                                     batch_size=1, shuffle=True, seed=SEED)
 
 test_dataset = tf.data.Dataset.from_generator(
     lambda: test_generator_2,
     output_types=(tf.float32, tf.float32))
 test_dataset = test_dataset.map(convert_to_dictionaries)
-test_dataset = test_dataset.take(NUMBER_OF_BATCHES)
+test_dataset = test_dataset.take(1)
 
 """LOAD WEIGHTS WE TRAINED"""
 base_model.load_weights(r'weights\flat_weights_inception_resnet_v2_80.39%.hdf5')  # 80.39% acc on test data
@@ -119,7 +119,6 @@ for k, batch in enumerate(test_dataset):
     if k >= NUMBER_OF_BATCHES:
         break  # for the demonstration
     perturbed_batch = reference_model.perturb_on_batch(batch)
-
     # Clipping makes perturbed examples have the same range as regular ones.
     # (!!) super important to clip to the same original values that the original features had
     perturbed_batch[IMAGE_INPUT_NAME] = tf.clip_by_value(
@@ -161,8 +160,8 @@ for batch_index in range(NUMBER_OF_BATCHES):
         p_base = np.max(probabilities[0]['base'][i]).round(3) * 100
         p_adv = np.max(probabilities[0]['adv-regularized'][i]).round(3) * 100
         plt.subplot(n_row, n_col, i + 1)
-        plt.title('true: {}, base: {}, adv: {} \n'
-                  'confidence: base: {}% , adv: {}%'
+        plt.title('true: {}, base: {}, NSL: {} \n'
+                  'confidence: base: {}% , NSL: {}%'
                   .format(tf.argmax(y).numpy(), y_base, y_adv, str(p_base)[:4], str(p_adv)[:4]))
         # the opposite of the pre processed
         plt.imshow(tf.keras.preprocessing.image.array_to_img((image + 1.0) * 127.5))

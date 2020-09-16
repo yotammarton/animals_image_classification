@@ -1,5 +1,4 @@
 """
-29/8/2020
 This module uses adversarial regularization from NSL (neural structured learning)
 to predict the breed (flat) of the animal (a multi-class classification problem from 37 different classes)
 """

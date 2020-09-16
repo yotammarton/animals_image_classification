@@ -1,3 +1,6 @@
+"""
+utils for image processing, such as augmentations and dataframes .csv creation with image paths
+"""
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt

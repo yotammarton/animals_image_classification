@@ -1,3 +1,5 @@
+"""process few augmentations examples for the report / poster"""
+
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
 import tensorflow as tf
@@ -5,7 +7,8 @@ import pandas as pd
 
 INPUT_SHAPE = [299, 299, 3]
 
-path = r'images/german_shorthaired_126.jpg'
+# choose image for augmentation
+path = r'images/Abyssinian_44.jpg'
 df = pd.DataFrame(columns=['path', 'cat/dog'])
 df = df.append({'path': path, 'cat/dog': 'dog'}, ignore_index=True)
 
