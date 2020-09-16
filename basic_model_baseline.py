@@ -1,3 +1,5 @@
+"""train and inference with baseline models: KNN, SVM"""
+
 import argparse
 import string
 import os
@@ -63,10 +65,10 @@ def Classify(features, set_type, labels, c_of_svm):
     print(f'number of test featuers: {len(test_features)} and test labels: {len(test_labels)}')
 
     acc, k = KNN(3, train_features, train_labels, test_features, test_labels)
-    print(f'    {k}NN - accuracy: {(round(acc*100, 4))}')
+    print(f'    {k}NN - accuracy: {(round(acc * 100, 4))}')
 
     acc = SVM(train_features, train_labels, test_features, test_labels, c_of_svm)
-    print(f'    SVM - accuracy: {(round(acc*100, 4))}')
+    print(f'    SVM - accuracy: {(round(acc * 100, 4))}')
 
     # acc = neural_network_MLP(train_features, train_labels, test_features, test_labels)
     # print(f'    Neural Network MLP - accuracy: {(round(acc*100, 4))}\n')
@@ -121,7 +123,7 @@ for c_of_svm in [0.2, 0.5, 1, 2]:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         if image is None:
-            continue  # TODO right?
+            continue
         else:
             set_type_ = row['train/test']
             if row['cat/dog'] == 'cat':
@@ -136,7 +138,7 @@ for c_of_svm in [0.2, 0.5, 1, 2]:
 
             for i in images:
                 pixels = image_to_feature_vector(i)
-                pixels = pixels/255.0
+                pixels = pixels / 255.0
                 rawImages.append(pixels)
 
                 hist = extract_color_histogram(i)
@@ -157,7 +159,7 @@ for c_of_svm in [0.2, 0.5, 1, 2]:
     print(f'Number of cats after adding augmentations:{sum(labels)}')
     print(f'Number of dogs after adding augmentations:{len(labels) - sum(labels)}\n')
 
-    rawImages, color_hist, labels, set_type, sift_features =\
+    rawImages, color_hist, labels, set_type, sift_features = \
         np.array(rawImages), np.array(color_hist), np.array(labels), np.array(set_type), np.array(sift_features)
 
     print(f'color_hist.shape:{color_hist.shape}')
@@ -172,7 +174,7 @@ for c_of_svm in [0.2, 0.5, 1, 2]:
     # print(f'sift_features:{sift_features}')
     # print(f'min sift_features:{sift_features.min()}')
     # print(f'max sift_features:{sift_features.max()}')
-    sift_features = sift_features/sift_features.max()
+    sift_features = sift_features / sift_features.max()
     # print(f'sift_features:{sift_features}')
     print(f'min sift_features:{sift_features.min()}')
     print(f'max sift_features:{sift_features.max()}')
