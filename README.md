@@ -5,20 +5,20 @@ Technion - Machine Learning and Optimization (097209)
 Yotam Martin, Gal Goldstein
 
 
-[<img src="https://i.imgur.com/EZpgCsf.png">](http://google.com.au/)
+[<img src="https://i.imgur.com/EZpgCsf.png">](http://google.com)
 
 ## Code directory
 
-✓ sign means we build the code from scratch<br>
+✓ sign means we built the file from scratch<br>
 if no sign the code is from github repos
 
 ```bash
 .
-├── advanced_model_flat.py -------------------------------- train and inference
-├── advanced_model_hierarchical.py
-├── basic_model_baseline.py
-├── basic_model_structured.py
-├── crfrnn_keras
+├── advanced_model_flat.py -------------------------------- ✓ train and inference flat models (breed classification)
+├── advanced_model_hierarchical.py ------------------------ ✓ train and inference hierarchical models (breed classification)
+├── basic_model_baseline.py ------------------------------- ✓ train and inference KNN, SVM classifiers 
+├── basic_model_structured.py ----------------------------- ✓ inference structured FCN+CRF-RNN model
+├── crfrnn_keras ------------------------------------------   github repo for training CRF-RNN 
 │   ├── cpp
 │   │   ├── Makefile
 │   │   ├── high_dim_filter.cc
@@ -29,13 +29,13 @@ if no sign the code is from github repos
 │   ├── high_dim_filter_loader.py
 │   ├── test_gradients.py
 │   └── util.py
-├── data_advanced_model.csv
-├── data_advanced_model_linux.csv
-├── data_basic_model.csv
-├── data_basic_model_linux.csv
-├── neural_structured_learning_adversarial_examples.py
-├── neural_structured_learning_model.py
-├── train_CRF-RNN
+├── data_advanced_model.csv ------------------------------- ✓ paths to images for advanced part models (windows paths)
+├── data_advanced_model_linux.csv ------------------------- ✓ paths to images for advanced part models (linux paths)
+├── data_basic_model.csv ---------------------------------- ✓ paths to images for basic part models (windows paths)
+├── data_basic_model_linux.csv ---------------------------- ✓ paths to images for basic part models (linux paths)
+├── neural_structured_learning_adversarial_examples.py ---- ✓ generate examples for Figure 4 in report
+├── neural_structured_learning_model.py ------------------- ✓ train and inference NSL models (creative part)
+├── train_CRF-RNN -----------------------------------------   github repo for training CRF-RNN 
 │   ├── LICENSE
 │   ├── README.md
 │   ├── TVG_CRFRNN_COCO_VOC_TEST_3_CLASSES.prototxt
@@ -50,5 +50,5 @@ if no sign the code is from github repos
 │   ├── test_model.py
 │   ├── train.py
 │   └── utils.py
-└── utils.py
+└── utils.py ---------------------------------------------- ✓ auxilary function for creating augmentations and .csv files
 ```
