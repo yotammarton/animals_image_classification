@@ -2,7 +2,7 @@
 
 ```bash
 .
- advanced_model_flat.py
+├── advanced_model_flat.py --------------------------------
 ├── advanced_model_hierarchical.py
 ├── basic_model_baseline.py
 ├── basic_model_structured.py
@@ -27,7 +27,7 @@
 │   ├── LICENSE
 │   ├── README.md
 │   ├── TVG_CRFRNN_COCO_VOC_TEST_3_CLASSES.prototxt
-│   ├── TVG_CRFRNN_COCO_VOC_TRAIN_3_CLASSES.prototxt
+│   ├── TVG_CRFRNN_COCO_VOC_TRAIN_3_CLASSES.prototxt ------
 │   ├── convert_labels.py
 │   ├── crfasrnn.py
 │   ├── data2lmdb.py
