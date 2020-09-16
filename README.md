@@ -1,8 +1,20 @@
-# animals_image_classification
+# Pet family and breed classification
+
+Technion - Machine Learning and Optimization (097209)
+
+Yotam Martin, Gal Goldstein
+
+
+[<img src="https://i.imgur.com/EZpgCsf.png">](http://google.com.au/)
+
+## Code directory
+
+✓ sign means we build the code from scratch<br>
+if no sign the code is from github repos
 
 ```bash
 .
-├── advanced_model_flat.py --------------------------------
+├── advanced_model_flat.py -------------------------------- train and inference
 ├── advanced_model_hierarchical.py
 ├── basic_model_baseline.py
 ├── basic_model_structured.py
