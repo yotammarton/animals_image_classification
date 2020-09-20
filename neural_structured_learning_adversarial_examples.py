@@ -75,7 +75,7 @@ pre_process = preprocess_input_inception_resnet_v2
 test_data_gen = ImageDataGenerator(preprocessing_function=pre_process)
 test_generator_2 = test_data_gen.flow_from_dataframe(dataframe=test_df, x_col="path", y_col="breed",
                                                      class_mode="categorical", target_size=INPUT_SHAPE[:2],
-                                                     batch_size=1, shuffle=True, seed=SEED)
+                                                     batch_size=BATCH_SIZE, shuffle=True, seed=SEED)
 
 test_dataset = tf.data.Dataset.from_generator(
     lambda: test_generator_2,
